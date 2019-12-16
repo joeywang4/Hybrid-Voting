@@ -1,7 +1,9 @@
 import React from 'react'
-import { Grid, Form, Button, Message, Icon, Header } from 'semantic-ui-react'
+import { Grid, Form, Button, Message, Icon, Header, TextArea } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
-import {BACKEND_URL} from '../../const_val';
+import {BACKEND_URL, CLIENT_URL, NO_CLIENT_URL} from '../../const_val';
+
+const [IDLE, BUSY, ERROR] = [0, 1, 2]
 
 class RegisterForm extends React.Component {
   constructor(props) {
@@ -13,7 +15,7 @@ class RegisterForm extends React.Component {
       sigPrivKey: "",
       file: "",
       uploadBusy: false,
-      genBusy: false,
+      genState: IDLE,
       redirect: false
     }
     this.name = "";
@@ -26,6 +28,41 @@ class RegisterForm extends React.Component {
 
   genKey = () => {
     this.setState(state => {
+      state.genState = BUSY;
+      return state;
+    })
+    fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/genSigKey")
+    .then(res => {
+      if(res.status === 200) {
+        res.json()
+        .then(data => {
+          if("sigPubKey" in data) this.sigPubKey = data['sigPubKey'];
+          if("sigPrivKey" in data) this.sigPrivKey = data['sigPrivKey'];
+          this.updateKey();
+          this.setState(state => {
+            state.genState = IDLE;
+            return state;
+          })
+        })
+      }
+      else {
+        this.setState(state => {
+          state.genState = ERROR;
+          return state;
+        })
+      }
+    })
+    .catch(err => {
+      console.log("Generate Keypair Error", err);
+      this.setState(state => {
+        state.genState = ERROR;
+        return state;
+      })
+    })
+  }
+
+  updateKey = () => {
+    this.setState(state => {
       if(state.sigPubKey !== this.sigPubKey) state.sigPubKey = this.sigPubKey;
       if(state.sigPrivKey !== this.sigPrivKey) state.sigPrivKey = this.sigPrivKey;
       state.file = "{\"sigPubKey\": \"" + this.sigPubKey + "\", \"sigPrivKey\": \"" + this.sigPrivKey + "\"}";
@@ -33,8 +70,22 @@ class RegisterForm extends React.Component {
     })
   }
 
+  loadKey = data => {
+    const loaded = JSON.parse(data);
+      if("sigPubKey" in loaded) {
+        this.sigPubKey = loaded['sigPubKey'];
+      }
+      if("sigPrivKey" in loaded) {
+        this.sigPrivKey = loaded['sigPrivKey'];
+      }
+      this.updateKey();
+      this.setState(state => {
+        state.uploadBusy = false;
+        return state;
+      })
+  }
+
   keyUploaded = () => {
-    console.log("Hi");
     const file = this.fileInputRef.current.files[0];
     const reader = new FileReader();
     this.setState(state => {
@@ -42,19 +93,7 @@ class RegisterForm extends React.Component {
       return state;
     })
     reader.onload = e => {
-      const loaded = JSON.parse(e.target.result);
-      this.setState(state => {
-        state.uploadBusy = false;
-        if("sigPubKey" in loaded) {
-          state.sigPubKey = loaded['sigPubKey'];
-          this.sigPubKey = loaded['sigPubKey'];
-        }
-        if("sigPrivKey" in loaded) {
-          state.sigPrivKey = loaded['sigPrivKey'];
-          this.sigPrivKey = loaded['sigPrivKey'];
-        }
-        return state;
-      })
+      this.loadKey(e.target.result);
     }
     reader.onerror = e => {
       alert("You uploaded an invalid file");
@@ -127,14 +166,14 @@ class RegisterForm extends React.Component {
             </Form.Field>
             <Form.Field>
               <label>Signature Public Key</label>
-              <Form.Input type="textarea" required={true} id="sigPubKey" placeholder="Base64 encoded public key" value={this.state.sigPubKey} onChange={e => { this.sigPubKey = e.target.value; this.genKey(); }} />
+              <Form.Input type="textarea" required={true} control={TextArea} id="sigPubKey" placeholder="Base64 encoded public key" value={this.state.sigPubKey} onChange={e => { this.sigPubKey = e.target.value; this.updateKey(); }} />
             </Form.Field>
             <Form.Field>
               <label>Signature Private Key</label>
-              <Form.Input type="textarea" required={true} id="sigPrivKey" placeholder="Base64 encoded private key" value={this.state.sigPrivKey} onChange={e => { this.sigPrivKey = e.target.value; this.genKey(); }} />
+              <Form.Input type="textarea" required={true} control={TextArea} id="sigPrivKey" placeholder="Base64 encoded private key" value={this.state.sigPrivKey} onChange={e => { this.sigPrivKey = e.target.value; this.updateKey(); }} />
             </Form.Field>
             <Form.Group widths="equal">
-              <Form.Button loading={this.state.genBusy}>Generate Key</Form.Button>
+              <Form.Button loading={this.state.genState === BUSY} onClick={this.genKey}>Generate Key</Form.Button>
               <Form.Button
                 content="Upload Key"
                 loading={this.state.uploadBusy}

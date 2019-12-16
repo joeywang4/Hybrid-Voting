@@ -11,8 +11,17 @@ import User from './container/users/user';
 //import CreateChallenge from './component/CreateChallenge';
 //import Challenges from './container/challenges';
 //import Challenge from './container/challenges/Challenge';
-import {BACKEND_URL} from './const_val';
+import {BACKEND_URL, CLIENT_URL} from './const_val';
 import './App.css';
+
+function timedFetch (url, options, timeout = 7000) {
+  return Promise.race([
+    fetch(url, options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), timeout)
+    )
+  ]);
+}
 
 const checkToken = () => {
   fetch(BACKEND_URL+"/user", {
@@ -50,6 +59,23 @@ class App extends React.Component {
       // Check token validation
       checkToken();
     }
+    this.state = {
+      hasClient: false
+    }
+    this.checkClient();
+  }
+
+  checkClient = () => {
+    timedFetch(CLIENT_URL+"/", undefined, 1000)
+    .then(res => {
+      if(res.status === 200) {
+        console.log("[Client Connected]")
+        this.setState(state => {
+          state.hasClient = true;
+          return state;
+        })
+      }
+    })
   }
 
   render() {
@@ -60,7 +86,6 @@ class App extends React.Component {
           <div className="main">
             <Switch>
               <Route exact path="/"><Home /></Route>
-              {/*<Route exact path="/resources"><Resources /></Route>*/}
               <Route exact path="/users"><Users /></Route>
               <Route exact path="/user">
                 {({ location }) => {
@@ -70,15 +95,7 @@ class App extends React.Component {
                 }}
               </Route>
               <Route exact path="/login"><Login /></Route>
-              <Route exact path="/register"><Register /></Route>
-              {/*<Route exact path="/newChallenge"><CreateChallenge /></Route>*/}
-              {/*<Route exact path="/challenges"><Challenges /></Route>*/}
-              {/*<Route exact path="/challenge">
-                {({ location }) => {
-                  const _id = location.search.substr(4);
-                  return <Challenge id={_id} />;
-                }}
-              </Route>*/}
+              <Route exact path="/register"><Register hasClient={this.state.hasClient} /></Route>
               <Route path="/redirect/:name">
                 {({ match }) => {
                   this.forceUpdate();

@@ -1,7 +1,9 @@
 import flask
 from signature import gen_keypair
+from flask_cors import CORS
 
 app = flask.Flask(__name__)
+CORS(app)
 app.config["DEBUG"] = True
 
 
