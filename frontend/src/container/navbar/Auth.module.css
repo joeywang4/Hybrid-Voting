@@ -1,0 +1,13 @@
+.item {
+    margin: 0.5em 1em 0.5em 1em;
+}
+
+.features {
+    color: gray;
+}
+
+.form {
+    width: 50%;
+    margin: auto;
+    margin-top: 3em;
+}
