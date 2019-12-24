@@ -1,5 +1,5 @@
 import flask
-from signature import gen_keypair
+from signature import gen_sig_keypair
 from flask_cors import CORS
 
 app = flask.Flask(__name__)
@@ -13,6 +13,6 @@ def home():
 
 @app.route('/genSigKey', methods=['GET'])
 def genSigKey():
-  return gen_keypair()
+  return gen_sig_keypair()
 
 app.run(host="localhost", port=8000)

@@ -1,7 +1,7 @@
 from base64 import b64encode, b64decode
 
 def byte_length(num):
-  bin_len = len(bin(num))-2
+  bin_len = num.bit_length()
   return bin_len//8 if bin_len%8 == 0 else (bin_len//8)+1
 
 def int_to_str(num):
