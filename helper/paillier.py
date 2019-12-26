@@ -1,11 +1,11 @@
 from util import randrange, int_to_str, str_to_int, Hash
 from Crypto.Util import number
 
-# m: message want to encrypt , n: public key, g=n+1
 # messages is a list containing all possible messages, len(messages) = rho
-# i is the message index that the prover encrypts
-# c = Enc(messages[i]) = Enc(m)
-def encryption(m, n, messages, i):
+# messages[i] will be the message want to encrypt, n: public key, g=n+1
+# output c = Enc(messages[i]) and signature (v,e,u)
+def encrypt(messages, i, n):
+  m = messages[i]
   g = n+1
   n_square = n**2
   found = False
@@ -53,12 +53,50 @@ def encryption(m, n, messages, i):
   v[i] = (k*pow(r, e[i], n)*pow(g, e[i]//n, n)) % n
   # 5.
   v = list(map(int_to_str, v))
-  e = list(map(int_to_str, v))
-  u = list(map(int_to_str, v))
+  e = list(map(int_to_str, e))
+  u = list(map(int_to_str, u))
   output = output + v + e + u
   return ";".join(output)
 
-def decryption(c, key):
+def decrypt(c, key):
   phi, mu, n = key
   m = ((pow(c, phi, n**2) // n) * mu) % n
   return m
+
+# note this function is for debugging purpose only
+# should move to solidity
+def message_membership_verify(messages, i, n, c, signature):
+  v, e, u = signature
+  n_square = n**2
+  g = n+1
+  rho = len(messages)
+  h = Hash(sum(u[:i]+u[i+1:]))
+
+  if (h - sum(e)) % n != 0:
+    return False
+  
+  for j in range(rho):
+    temp = (c * number.inverse(pow(g, messages[j], n_square), n_square)) % n_square
+    if not pow(v[j], n, n_square) == (u[j] * pow(temp, e[j], n_square)) % n_square:
+      return False
+  return True
+
+if __name__ == "__main__":
+  m = 2
+  messages = [1,2,3,4,5]
+  rho = len(messages)
+  i = 1
+  n = 11*13 # product of prime
+
+  output = encrypt(messages, i, n).split(";")
+  c = output[0]
+  v = output[1:rho+1]
+  e = output[rho+1:2*rho+1]
+  u = output[2*rho+1:3*rho+1]
+  
+  c = str_to_int(c)
+  v = list(map(str_to_int, v))
+  e = list(map(str_to_int, e))
+  u = list(map(str_to_int, u))
+
+  print(message_membership_verify(messages, i, n, c, (v,e,u)))
