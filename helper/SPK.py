@@ -1,4 +1,4 @@
-from util import randrange, Hash
+from util import randrange, Hash, int_to_str
 
 def DiscreteLogSign(y, g, x, p, q, m):
   '''
@@ -8,9 +8,9 @@ def DiscreteLogSign(y, g, x, p, q, m):
   r = pow(g, k, p)
   e = Hash(r, m)
   s = (k-x*e)%q
-  return (s,e)
+  return (s, e)
 
-def DiscreteLogVerify(y, g, p, q, m, s, e):
+def DiscreteLogVerify(y, g, p, m, s, e):
   r_v = (pow(g, s, p)*pow(y, e, p))%p
   e_v = Hash(r_v, m)
   return e_v == e
@@ -27,7 +27,7 @@ def DoubleDiscreteLogSign(y, g1, g2, x1, x2, p, q, m):
   s2 = (k2-x2*e)%q
   return (s1, s2, e)
 
-def DoubleDiscreteLogVerify(y, g1, g2, p, q, m, s1, s2, e):
+def DoubleDiscreteLogVerify(y, g1, g2, p, m, s1, s2, e):
   r_v = (pow(g1, s1, p)*pow(g2, s2, p)*pow(y, e, p))%p
   e_v = Hash(r_v, m)
   return e_v == e
@@ -63,9 +63,52 @@ if __name__ == "__main__":
   from Crypto.Util import number
   p = number.getStrongPrime(512) # might be safe prime, but it is too slow
   q = number.getStrongPrime(512) # might be safe prime, but it is too slow
+
   n = p*q
   phi = (p-1)*(q-1)
-   
+
+  def intToBytesArray(x):
+    x = x.to_bytes(128, byteorder="big")
+    temp = "["
+    for a in x:
+      temp += "\""
+      temp += hex(a)
+      temp += "\""
+      temp += ","
+    return temp[:-1] + "]"
+
+  g = randrange(2, n)
+  x = randrange(2, n)
+  m = 123456
+  y = pow(g, x, n)
+  s, e = DiscreteLogSign(y, g, x, n, phi, m)
+  print ("y:",  intToBytesArray(y))
+  print ("g:",  intToBytesArray(g))
+  print ("p:",  intToBytesArray(n))
+  print ("m:",  intToBytesArray(m))
+  print ("s:",  intToBytesArray(s))
+  print ("e:",  intToBytesArray(e))
+  exit()
+
+  g1 = randrange(2, n)
+  g2 = randrange(2, n)
+  x1 = randrange(2, n)
+  x2 = randrange(2, n)
+  m = 123456
+  y = (pow(g1, x1, n) * pow(g2, x2, n)) % n
+  s1, s2, e = DoubleDiscreteLogSign(y, g1, g2, x1, x2, n, phi, m)
+
+  pythonResult = DoubleDiscreteLogVerify(y, g1, g2, n, m, s1, s2, e)
+  print ("y:",  intToBytesArray(y))
+  print ("g1:", intToBytesArray(g1))
+  print ("g2:", intToBytesArray(g2))
+  print ("p:",  intToBytesArray(n))
+  print ("m:",  intToBytesArray(m))
+  print ("s1:", intToBytesArray(s1))
+  print ("s2:", intToBytesArray(s2))
+  print ("e:",  intToBytesArray(e))
+  exit()
+
   u = randrange(2, n)
   b = 4
   m = 123455678999
@@ -75,3 +118,4 @@ if __name__ == "__main__":
 
   verify = InRangeVerify(y,u,n,phi,b,m,s,e)
   print(verify)
+

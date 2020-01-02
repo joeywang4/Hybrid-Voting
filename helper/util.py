@@ -2,6 +2,7 @@ from base64 import b64encode, b64decode
 import secrets
 import random
 import hashlib
+from Crypto.Hash import keccak
 
 def byte_length(num):
   bin_len = num.bit_length()
@@ -37,11 +38,12 @@ def Hash(*args):
     return
   for i in range(n):
     if i == 0:
-      message = args[i].to_bytes(args[i].bit_length(), 'big', signed=False)
+      message = args[i].to_bytes(128, 'big', signed=False)
     else:
-      message += args[i].to_bytes(args[i].bit_length(), 'big', signed=False)
+      message += args[i].to_bytes(128, 'big', signed=False)
 
-  message = hashlib.sha256(message).digest()
+  # message = hashlib.sha256(message).digest()
+  message = keccak.new(data=message, digest_bits=256).digest()
   message = int.from_bytes(message, 'big', signed=False)
   return message
 
