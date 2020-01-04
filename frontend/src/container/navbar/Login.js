@@ -48,6 +48,7 @@ class LoginForm extends React.Component {
             localStorage['token'] = data.token;
             localStorage['name'] = data.name;
             localStorage['email'] = data.email;
+            localStorage['sigPubKey'] = data.sigPubKey;
             window.setTimeout((() => {
               this.setState(state => {
                 state.redirect = true;

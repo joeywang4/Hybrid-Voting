@@ -76,7 +76,7 @@ if __name__ == "__main__":
       temp += "\""
       temp += ","
     return temp[:-1] + "]"
-
+  '''
   g = randrange(2, n)
   x = randrange(2, n)
   m = 123456
@@ -89,7 +89,7 @@ if __name__ == "__main__":
   print ("s:",  intToBytesArray(s))
   print ("e:",  intToBytesArray(e))
   exit()
-
+  '''
   g1 = randrange(2, n)
   g2 = randrange(2, n)
   x1 = randrange(2, n)

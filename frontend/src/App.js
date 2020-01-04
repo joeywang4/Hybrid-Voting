@@ -7,10 +7,8 @@ import Register from './container/navbar/Register';
 import Users from './container/users';
 import Me from './container/users/me';
 import User from './container/users/user';
-//import Resources from './container/rsrc';
-//import CreateChallenge from './component/CreateChallenge';
-//import Challenges from './container/challenges';
-//import Challenge from './container/challenges/Challenge';
+import Elections from './container/elections';
+import CreateElection from './container/elections/CreateElection';
 import {BACKEND_URL, CLIENT_URL} from './const_val';
 import './App.css';
 
@@ -23,46 +21,46 @@ function timedFetch (url, options, timeout = 7000) {
   ]);
 }
 
-const checkToken = () => {
-  fetch(BACKEND_URL+"/user", {
-    method: "GET",
-    headers: new Headers({
-      'authorization': localStorage['token']
-    })
-  })
-  .then(res => {
-    if(res.status === 401) {
-      console.log("Token expired");
-      localStorage.removeItem('token');
-      if(localStorage['name']) localStorage.removeItem('name');
-      if(localStorage['email']) localStorage.removeItem('email');
-      if(localStorage['sigPubKey']) localStorage.removeItem('email');
-      if(localStorage['sigPrivKey']) localStorage.removeItem('sigPrivKey');
-      this.forceUpdate();
-    }
-    else if(res.status === 200 && (!localStorage['name'] || !localStorage['email'] || !localStorage['sigPubKey'])) {
-      res.json()
-      .then(data => {
-        localStorage['name'] = data.name;
-        localStorage['email'] = data.email;
-        localStorage['sigPubKey'] = data.sigPubKey
-      })
-    }
-  })
-  .catch(err => {console.error(err)});
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
     if(localStorage['token']) {
       // Check token validation
-      checkToken();
+      this.checkToken();
     }
     this.state = {
       hasClient: false
     }
     this.checkClient();
+  }
+
+  checkToken = () => {
+    fetch(BACKEND_URL+"/user", {
+      method: "GET",
+      headers: new Headers({
+        'authorization': localStorage['token']
+      })
+    })
+    .then(res => {
+      if(res.status === 401) {
+        console.log("Token expired");
+        localStorage.removeItem('token');
+        if(localStorage['name']) localStorage.removeItem('name');
+        if(localStorage['email']) localStorage.removeItem('email');
+        if(localStorage['sigPubKey']) localStorage.removeItem('sigPubKey');
+        if(localStorage['sigPrivKey']) localStorage.removeItem('sigPrivKey');
+        this.forceUpdate();
+      }
+      else if(res.status === 200 && (!localStorage['name'] || !localStorage['email'] || !localStorage['sigPubKey'])) {
+        res.json()
+        .then(data => {
+          localStorage['name'] = data.name;
+          localStorage['email'] = data.email;
+          localStorage['sigPubKey'] = data.sigPubKey
+        })
+      }
+    })
+    .catch(err => {console.error(err)});
   }
 
   checkClient = () => {
@@ -96,6 +94,8 @@ class App extends React.Component {
               </Route>
               <Route exact path="/login"><Login /></Route>
               <Route exact path="/register"><Register hasClient={this.state.hasClient} /></Route>
+              <Route exact path="/elections"><Elections /></Route>
+              <Route exact path="/create-election"><CreateElection /></Route>
               <Route path="/redirect/:name">
                 {({ match }) => {
                   this.forceUpdate();

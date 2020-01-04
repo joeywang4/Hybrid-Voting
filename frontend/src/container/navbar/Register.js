@@ -110,7 +110,7 @@ class RegisterForm extends React.Component {
       <Grid textAlign="center" style={{marginTop: "2vh"}}>
         <Grid.Column style={{ maxWidth: 500 }}>
           <Header as='h2' icon textAlign='center'>
-            <Icon name='user plus' circular />
+            <Icon name='user plus'/>
             <Header.Content>Register</Header.Content>
           </Header>
           <Form
@@ -119,7 +119,7 @@ class RegisterForm extends React.Component {
               console.log(this.email, this.pwd, this.name);
               fetch(BACKEND_URL+"/auth/register", {
                 method: "POST",
-                body: JSON.stringify({name: this.name, email: this.email, pwd: this.pwd}),
+                body: JSON.stringify({name: this.name, email: this.email, pwd: this.pwd, sigPubKey: this.sigPubKey}),
                 headers: {'content-type': "application/json"}
               })
               .then(res => {
@@ -140,7 +140,8 @@ class RegisterForm extends React.Component {
                       state.redirect = true;
                       return state;
                     })
-                  }), 3000);;
+                  }), 3000);
+                  localStorage["sigPrivKey"] = this.sigPrivKey;
                   this.setState(state => {
                     state.msg = "Register success! Redirect in three seconds.";
                     return state
@@ -153,16 +154,13 @@ class RegisterForm extends React.Component {
             }}
           >
             <Form.Field>
-              <label>Name</label>
-              <Form.Input type="text" required={true} id="userName" onChange={e => { this.name = e.target.value }} />
+              <Form.Input icon='user' iconPosition='left' placeholder="Name" type="text" required={true} id="userName" onChange={e => { this.name = e.target.value }} />
             </Form.Field>
             <Form.Field>
-              <label>Email</label>
-              <Form.Input type="email" required={true} id="userEmail" onChange={e => { this.email = e.target.value }} />
+              <Form.Input icon='mail' iconPosition='left' placeholder="Email" type="email" required={true} id="userEmail" onChange={e => { this.email = e.target.value }} />
             </Form.Field>
             <Form.Field>
-              <label>Password</label>
-              <Form.Input type="password" required={true} id="userPassword" onChange={e => { this.pwd = e.target.value }} />
+              <Form.Input icon='lock' iconPosition='left' placeholder="Password" type="password" required={true} id="userPassword" onChange={e => { this.pwd = e.target.value }} />
             </Form.Field>
             <Form.Field>
               <label>Signature Public Key</label>
