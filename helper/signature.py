@@ -102,9 +102,10 @@ def sign_ballot(list_of_pks, key_pair, m, param):
   s9_1, s9_2, e9 = SPK.DoubleDiscreteLogSign(T9, g, t, pk, (2*sk_q*r)%phiN_sig, N_sig, phiN_sig, m) # sign T9
   sL, eL = SPK.DiscreteLogSign(y_hat, g_theta, (sk_p+sk_q)%phiN_sig, N_sig, phiN_sig, m) # sign linkable tag
 
-  sigma = [v, y_hat, s1, v, y_hat, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL]
-  sigma = list(map(int_to_str, sigma))
-  return ";".join(sigma)  
+  sigma = [v, y_hat, T1, T2, T3, T4, T5, T6, T7, T8, T9, g, h, s, t, y, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL]
+  return sigma
+  # sigma = list(map(int_to_str, sigma))
+  # return ";".join(sigma)  
 
 def keypair_to_json(sk_p, sk_q, pk):
   return json.dumps({"sigPubKey": int_to_str(pk), "sigPrivKey": int_to_str(sk_p)+";"+int_to_str(sk_q)})
@@ -140,11 +141,77 @@ if __name__ == "__main__":
   sk5_q = 2840467862191499077863105002484703326822266260861437699815912611280453396912965997661207119471112513875179877342796865651851197569284315280410024780479939
   pk5 = 16785871210318832245988935687678154961557032753660712185485892478728218432287954259875737628015403440983910790419595614155743300140024432752065957630594473164107057491787739367941936594507232017439789854360951841975821687389088843675321748520020878813204156325543443659708536010533608063720880091899875017899
 
+  def intToBytesArray(x, n):
+    x = x.to_bytes(n, byteorder="big")
+    temp = "["
+    for i in range(len(x)):
+      if i%32 == 0:
+        temp += "["
+      temp += "\""
+      temp += hex(x[i])
+      temp += "\""
+      if i%32 != 31:
+        temp += ","
+      else:
+        temp += "],"
+    return temp[:-1] + "]"
+
   param = gen_sig_param()
+  u, g_theta, N_sig, phiN_sig, p_sig, q_sig = param
+  print ("sigN" + intToBytesArray(N_sig, 128))
+  print ("sigPhi" + intToBytesArray(phiN_sig, 128))
+  print ("accumBase" + intToBytesArray(u, 128))
+  print ("g_theta" + intToBytesArray(g_theta, 128))
 
   list_of_pks = [pk2, pk3, pk4, pk5]
   key_pair = (sk1_p, sk1_q, pk1)
   m = 1234567894565231545315
-  sig = sign_ballot(list_of_pks, key_pair, m, param)
+  v, y_hat, T1, T2, T3, T4, T5, T6, T7, T8, T9, g, h, s, t, y, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL = sign_ballot(list_of_pks, key_pair, m, param)
+  print("m" + intToBytesArray(m, 128))
+  print("v" + intToBytesArray(v, 128))
+  print("y_hat" + intToBytesArray(y_hat, 128))
+  print("T1" + intToBytesArray(T1, 128))
+  print("g" + intToBytesArray(g, 128))
+  print("s1" + intToBytesArray(s1, 128))
+  print("e1" + intToBytesArray(e1, 32))
 
-  print(sig)
+  print (intToBytesArray(T1,128) + \
+  intToBytesArray(T2, 128) + \
+  intToBytesArray(T3, 128) + \
+  intToBytesArray(T4, 128) + \
+  intToBytesArray(T5, 128) + \
+  intToBytesArray(T6, 128) + \
+  intToBytesArray(T7, 128) + \
+  intToBytesArray(T8, 128) + \
+  intToBytesArray(T9, 128) + \
+  intToBytesArray(g, 128) + \
+  intToBytesArray(h, 128) + \
+  intToBytesArray(s, 128) + \
+  intToBytesArray(t, 128) + \
+  intToBytesArray(y, 128) + \
+  intToBytesArray(s1, 128) + \
+  intToBytesArray(e1, 32) + \
+  intToBytesArray(s2_1, 128) + \
+  intToBytesArray(s2_2, 128) + \
+  intToBytesArray(e2, 32) + \
+  intToBytesArray(s3_1, 128) + \
+  intToBytesArray(s3_2, 128) + \
+  intToBytesArray(e3, 32) + \
+  intToBytesArray(s4_1, 128) + \
+  intToBytesArray(s4_2, 128) + \
+  intToBytesArray(e4, 32) + \
+  intToBytesArray(s5_1, 128) + \
+  intToBytesArray(s5_2, 128) + \
+  intToBytesArray(e5, 32) + \
+  intToBytesArray(s6, 128) + \
+  intToBytesArray(e6, 128) + \
+  intToBytesArray(s7, 128) + \
+  intToBytesArray(e7, 32) + \
+  intToBytesArray(s8_1, 128) + \
+  intToBytesArray(s8_2, 128) + \
+  intToBytesArray(e8, 32) + \
+  intToBytesArray(s9_1, 128) + \
+  intToBytesArray(s9_2, 128) + \
+  intToBytesArray(e9, 32) + \
+  intToBytesArray(sL, 128) + \
+  intToBytesArray(eL, 32))
