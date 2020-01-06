@@ -1,8 +1,9 @@
 pragma solidity >=0.5 <0.6;
 
 contract ElectionMasterInterface {
-    function getSigN(uint32 _idx) public view returns(bytes32[4] memory);
+    function getSigN() public view returns(bytes32[4] memory);
     function getAccumBase(uint32 _idx) public view returns(bytes32[4] memory);
+    function getLinkBase(uint32 _idx) public view returns(bytes32[4] memory);
 }
 
 contract DiscreteLogInterface {
@@ -30,10 +31,10 @@ contract DoubleDiscreteLogInterface {
 }
 
 contract BallotMaster {
-    address ElectionMasterAddress = 0x9167ac377275E899e281cda65F7722C6bc921429;
+    address ElectionMasterAddress = 0xbfCEBb970b01933B9cAC43F7aCf5FB39A64c4AE8;
     ElectionMasterInterface ElectionMasterContract = ElectionMasterInterface(ElectionMasterAddress);
     
-    address VerifyAddress = 0x62f00649e89a9dee80d8F1F49D9Ae285C9bc0332; 
+    address VerifyAddress = 0x4d2191C541a8b0b8824309C60e803FEC09999aDA; 
     DiscreteLogInterface DiscreteLogContract = DiscreteLogInterface(VerifyAddress);
     DoubleDiscreteLogInterface DoubleDiscreteLogContract = DoubleDiscreteLogInterface(VerifyAddress);
 
@@ -44,7 +45,9 @@ contract BallotMaster {
     uint16 constant linkableTagLength = 128;
     uint16 constant signatureLength = 4160; 
     // T1,T2,T3,T4,T5,T6,T7,T8,T9,g, h, s, t, y, s1,e1,s2_1,s2_2,e2,s3_1,s3_2,e3,s4_1,s4_2,e4,s5_1,s5_2,e5,s6,e6, s7, e7, s8_1,s8_2,e8, s9_1,s9_2,e9, sL, eL
+    // T1,T2,T3,T4,T5,T6,T7,T8,T9,g, h, s, t, y, s1,e1,s2_1,s2_2,e2,s3_1,s3_2,e3,s4_1,s4_2,e4,s5_1,s5_2,e5,s6,e6, s7, e7, s8_1,s8_2,e8, s9_1,s9_2,e9, sL, eL
     // 0, 4, 8, 12,16,20,24,28,32,36,40,44,48,52,56,60,61,  65,  69,70,  74,  78,79,  83,  87,88,  92,  96,97,101,102,106,107, 111, 115,116, 120, 124,125,129
+    // 0, 4, 8, 12,16,20,24,28,32,36,40,44,48,52,56,60,61,  65,  69,70,  74,  78,79,  83,  87,88,  92,  96,97,101,105,109,110, 114, 118, 119, 123, 127, 128, 132]
     uint8 constant validatorLength = 10;
     
     struct Ballot {
@@ -90,7 +93,7 @@ contract BallotMaster {
         bytes32[signatureLength/32] memory signature = ballots[_idx].signature;
         bytes32[4] memory T1 = [signature[0],signature[1],signature[2],signature[3]];
         bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory N = ElectionMasterContract.getSigN(_idx); // get from ElectionMaster
+        bytes32[4] memory N = ElectionMasterContract.getSigN(); // get from ElectionMaster
         bytes32[4] memory m = ballots[_idx].message;
         bytes32[4] memory s1 = [signature[56],signature[57],signature[58],signature[59]];
         bytes32 e1 = signature[60];
@@ -103,7 +106,7 @@ contract BallotMaster {
         bytes32[4] memory T2 = [signature[4],signature[5],signature[6],signature[7]];
         bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
         bytes32[4] memory h = [signature[40],signature[41],signature[42],signature[43]];
-        bytes32[4] memory N = ElectionMasterContract.getSigN(_idx); // get from ElectionMaster
+        bytes32[4] memory N = ElectionMasterContract.getSigN(); // get from ElectionMaster
         bytes32[4] memory m = ballots[_idx].message;
         bytes32[4] memory s2_1 = [signature[61],signature[62],signature[63],signature[64]];
         bytes32[4] memory s2_2 = [signature[65],signature[66],signature[67],signature[68]];
@@ -117,7 +120,7 @@ contract BallotMaster {
         bytes32[4] memory T3 = [signature[8],signature[9],signature[10],signature[11]];
         bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
         bytes32[4] memory s = [signature[44],signature[45],signature[46],signature[47]];
-        bytes32[4] memory N = ElectionMasterContract.getSigN(_idx); // get from ElectionMaster
+        bytes32[4] memory N = ElectionMasterContract.getSigN(); // get from ElectionMaster
         bytes32[4] memory m = ballots[_idx].message;
         bytes32[4] memory s3_1 = [signature[70],signature[71],signature[72],signature[73]];
         bytes32[4] memory s3_2 = [signature[74],signature[75],signature[76],signature[77]];
@@ -131,7 +134,7 @@ contract BallotMaster {
         bytes32[4] memory T4 = [signature[12],signature[13],signature[14],signature[15]];
         bytes32[4] memory u = ElectionMasterContract.getAccumBase(_idx); // get from ElectionMaster
         bytes32[4] memory y = [signature[52],signature[53],signature[54],signature[55]];
-        bytes32[4] memory N = ElectionMasterContract.getSigN(_idx); // get from ElectionMaster
+        bytes32[4] memory N = ElectionMasterContract.getSigN(); // get from ElectionMaster
         bytes32[4] memory m = ballots[_idx].message;
         bytes32[4] memory s4_1 = [signature[79],signature[80],signature[81],signature[82]];
         bytes32[4] memory s4_2 = [signature[83],signature[84],signature[85],signature[86]];

@@ -6,6 +6,10 @@ import SPK
 # Security parameter
 # RSA-1024 ~= 2^80
 lamb = 1024
+p_sig = 0xb963e0eeeee46d96448188fe505e6c020d861b8e88e1a69c8892b7eb404a3c66a5065d273f365dc34c5e825bc68fd4807717d5fa126b1a03ee5d5cff797c9bff
+q_sig = 0xec6f1862a53add2e6f20d6de6a7cc08c159efbb81aa1a133889fdb2a576dc109b8d7f1133302b506f6404baf4ae9c086274220f28ab2c790a50caca4a6317a1f
+N_sig = 0xab38875398ceacb6b8bd48924bd9001ba3667819dfba19bb3356a0068995396b56153fc51a0bd6888d53e80749b8d0f493d2895ac04524ad9fed0d79700f0282b6dc361e1feb0a3f8fa5f4ed9136e574ef04c9c94d22c19cfd777b531e32e7b4812a645af3b0248e6ed9764c8a640198ec8b9a5860ea645b08e454324e3d69e1
+phiN_sig = 0xab38875398ceacb6b8bd48924bd9001ba3667819dfba19bb3356a0068995396b56153fc51a0bd6888d53e80749b8d0f493d2895ac04524ad9fed0d79700f028111093ccc8bcbbf7adc039510d65bb8e6cbdfb282a99f79ccec44e83d867aea44234c1620817711c42c3aa84178ea6c924e31a36bc3cc82c6757a4a8e2e8f53c4
 
 def is_valid_sig_pair(sk_p, sk_q, pk):
   return number.isPrime(pk) and number.isPrime(sk_p) and number.isPrime(sk_q) and pk == 2*sk_p*sk_q+1 and sk_p.bit_length() == 510 and sk_q.bit_length() == 510
@@ -50,13 +54,21 @@ def get_generator(p, q):
 # Generate signature accumulator and groups
 # Output: Accumulator base, Linkable tag, N_sig, phiN_sig, p_sig, q_sig
 def gen_sig_param():
+  '''
   p_sig = number.getStrongPrime(lamb//2) # might be safe prime, but it is too slow
   q_sig = number.getStrongPrime(lamb//2) # might be safe prime, but it is too slow
   N_sig = p_sig * q_sig
   phiN_sig = (p_sig-1) * (q_sig-1)
-  u = get_generator(p_sig, q_sig)
-  g_theta = get_generator(p_sig, q_sig) # linkable tag
+  '''
+  u = get_generator(p_sig, q_sig) # Accum base
+  g_theta = get_generator(p_sig, q_sig) # linkable tag base
   return u, g_theta, N_sig, phiN_sig, p_sig, q_sig
+
+def gen_accum_voters(accumBase, voters):
+  v = 1
+  for voter in voters:
+    v = (v * pow(accumBase, voter, N_sig)) % N_sig
+  return v
 
 # Sign a message
 # Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int), parameters(u, g_theta, N_sig, phiN_sig, p_sig, q_sig)
@@ -142,76 +154,67 @@ if __name__ == "__main__":
   pk5 = 16785871210318832245988935687678154961557032753660712185485892478728218432287954259875737628015403440983910790419595614155743300140024432752065957630594473164107057491787739367941936594507232017439789854360951841975821687389088843675321748520020878813204156325543443659708536010533608063720880091899875017899
 
   def intToBytesArray(x, n):
-    x = x.to_bytes(n, byteorder="big")
-    temp = "["
-    for i in range(len(x)):
-      if i%32 == 0:
-        temp += "["
-      temp += "\""
-      temp += hex(x[i])
-      temp += "\""
-      if i%32 != 31:
-        temp += ","
-      else:
-        temp += "],"
-    return temp[:-1] + "]"
+    # x = x.to_bytes(n, byteorder="big")
+    h = hex(x)[2:].rjust(2*n, '0')
+    temp = ["0x"+h[i*64:(i+1)*64] for i in range(len(h)//64)]
+    return temp
 
   param = gen_sig_param()
   u, g_theta, N_sig, phiN_sig, p_sig, q_sig = param
-  print ("sigN" + intToBytesArray(N_sig, 128))
-  print ("sigPhi" + intToBytesArray(phiN_sig, 128))
-  print ("accumBase" + intToBytesArray(u, 128))
-  print ("g_theta" + intToBytesArray(g_theta, 128))
+  print ("accumBase" , intToBytesArray(u, 128))
+  print ("g_theta" , intToBytesArray(g_theta, 128))
 
   list_of_pks = [pk2, pk3, pk4, pk5]
   key_pair = (sk1_p, sk1_q, pk1)
   m = 1234567894565231545315
   v, y_hat, T1, T2, T3, T4, T5, T6, T7, T8, T9, g, h, s, t, y, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL = sign_ballot(list_of_pks, key_pair, m, param)
-  print("m" + intToBytesArray(m, 128))
-  print("v" + intToBytesArray(v, 128))
-  print("y_hat" + intToBytesArray(y_hat, 128))
-  print("T1" + intToBytesArray(T1, 128))
-  print("g" + intToBytesArray(g, 128))
-  print("s1" + intToBytesArray(s1, 128))
-  print("e1" + intToBytesArray(e1, 32))
+  print("m" , intToBytesArray(m, 128))
+  print("v" , intToBytesArray(v, 128))
+  print("y_hat" , intToBytesArray(y_hat, 128))
+  print("T1" , intToBytesArray(T1, 128))
+  print("g" , intToBytesArray(g, 128))
+  print("s1" , intToBytesArray(s1, 128))
+  print("e1" , intToBytesArray(e1, 32))
 
-  print (intToBytesArray(T1,128) + \
-  intToBytesArray(T2, 128) + \
-  intToBytesArray(T3, 128) + \
-  intToBytesArray(T4, 128) + \
-  intToBytesArray(T5, 128) + \
-  intToBytesArray(T6, 128) + \
-  intToBytesArray(T7, 128) + \
-  intToBytesArray(T8, 128) + \
-  intToBytesArray(T9, 128) + \
-  intToBytesArray(g, 128) + \
-  intToBytesArray(h, 128) + \
-  intToBytesArray(s, 128) + \
-  intToBytesArray(t, 128) + \
-  intToBytesArray(y, 128) + \
-  intToBytesArray(s1, 128) + \
-  intToBytesArray(e1, 32) + \
+  print (
+  intToBytesArray(T1,   128) +\
+  intToBytesArray(T2,   128) + \
+  intToBytesArray(T3,   128) + \
+  intToBytesArray(T4,   128) + \
+  intToBytesArray(T5,   128) + \
+  intToBytesArray(T6,   128) + \
+  intToBytesArray(T7,   128) + \
+  intToBytesArray(T8,   128) + \
+  intToBytesArray(T9,   128) + \
+  intToBytesArray(g,    128) + \
+  intToBytesArray(h,    128) + \
+  intToBytesArray(s,    128) + \
+  intToBytesArray(t,    128) + \
+  intToBytesArray(y,    128) + \
+  intToBytesArray(s1,   128) + \
+  intToBytesArray(e1,    32) + \
   intToBytesArray(s2_1, 128) + \
   intToBytesArray(s2_2, 128) + \
-  intToBytesArray(e2, 32) + \
+  intToBytesArray(e2,    32) + \
   intToBytesArray(s3_1, 128) + \
   intToBytesArray(s3_2, 128) + \
-  intToBytesArray(e3, 32) + \
+  intToBytesArray(e3,    32) + \
   intToBytesArray(s4_1, 128) + \
   intToBytesArray(s4_2, 128) + \
-  intToBytesArray(e4, 32) + \
+  intToBytesArray(e4,    32) + \
   intToBytesArray(s5_1, 128) + \
   intToBytesArray(s5_2, 128) + \
-  intToBytesArray(e5, 32) + \
-  intToBytesArray(s6, 128) + \
-  intToBytesArray(e6, 128) + \
-  intToBytesArray(s7, 128) + \
-  intToBytesArray(e7, 32) + \
+  intToBytesArray(e5,    32) + \
+  intToBytesArray(s6,   128) + \
+  intToBytesArray(e6,    32) + \
+  intToBytesArray(s7,   128) + \
+  intToBytesArray(e7,    32) + \
   intToBytesArray(s8_1, 128) + \
   intToBytesArray(s8_2, 128) + \
-  intToBytesArray(e8, 32) + \
+  intToBytesArray(e8,    32) + \
   intToBytesArray(s9_1, 128) + \
   intToBytesArray(s9_2, 128) + \
-  intToBytesArray(e9, 32) + \
-  intToBytesArray(sL, 128) + \
-  intToBytesArray(eL, 32))
+  intToBytesArray(e9,    32) + \
+  intToBytesArray(sL,   128) + \
+  intToBytesArray(eL,    32)
+  )
