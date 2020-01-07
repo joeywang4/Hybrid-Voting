@@ -61,4 +61,46 @@ contract VerifySignature {
         emit VerifyResult(result);
         return result;
     }
+    function modmulWrapper(
+        bytes32[4] memory _a,
+        bytes32[4] memory _b,
+        bytes32[4] memory _m
+    ) public returns (bytes32[4] memory) {
+        bytes memory a = abi.encodePacked(_a);
+        bytes memory b = abi.encodePacked(_b);
+        bytes memory m = abi.encodePacked(_m);
+        bytes memory r = BigNumber.modmul(a,b,m);
+        bytes32 r1;
+        bytes32 r2;
+        bytes32 r3;
+        bytes32 r4;
+        assembly {
+            r1 := mload(add(r, 32))
+            r2 := mload(add(r, 64))
+            r3 := mload(add(r, 96))
+            r4 := mload(add(r, 128))
+        }
+        return [r1,r2,r3,r4];
+    }
+    function modexpWrapper(
+        bytes32[4] memory _b,
+        bytes32[4] memory _e,
+        bytes32[4] memory _m
+    ) public returns (bytes32[4] memory) {
+        bytes memory b = abi.encodePacked(_b);
+        bytes memory e = abi.encodePacked(_e);
+        bytes memory m = abi.encodePacked(_m);
+        bytes memory r = BigNumber.modexp(b,e,m);
+        bytes32 r1;
+        bytes32 r2;
+        bytes32 r3;
+        bytes32 r4;
+        assembly {
+            r1 := mload(add(r, 32))
+            r2 := mload(add(r, 64))
+            r3 := mload(add(r, 96))
+            r4 := mload(add(r, 128))
+        }
+        return [r1,r2,r3,r4];
+    }
 }
