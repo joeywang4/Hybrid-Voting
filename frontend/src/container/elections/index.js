@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Header, Icon, Divider, Loader, Card, Image, Button, Popup } from 'semantic-ui-react';
-import { getAllElections } from '../../contract/electionMaster'
 import electionIcon from './election.png'
 
 const [FAILED, SUCCESS, LOADING] = [0, 1, 2];
@@ -29,7 +28,8 @@ class Elections extends React.Component {
 
   async getElections() {
     const updateProgress = text => this.setState({progress: text});
-    this.elections = await getAllElections(updateProgress);
+    //this.elections = await getAllElections(updateProgress);
+    this.elections = false;
     if(this.elections === false) {
       this.setStatus(FAILED);
     }

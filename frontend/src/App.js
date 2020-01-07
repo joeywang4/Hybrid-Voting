@@ -95,7 +95,7 @@ class App extends React.Component {
               <Route exact path="/login"><Login /></Route>
               <Route exact path="/register"><Register hasClient={this.state.hasClient} /></Route>
               <Route exact path="/elections"><Elections /></Route>
-              <Route exact path="/create-election"><CreateElection /></Route>
+              <Route exact path="/create-election"><CreateElection hasClient={this.state.hasClient} /></Route>
               <Route path="/redirect/:name">
                 {({ match }) => {
                   this.forceUpdate();

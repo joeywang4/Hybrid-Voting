@@ -2,7 +2,8 @@ import React from 'react'
 import { Grid, Form, Button, Message, Icon, Header, TextArea, Table, Menu, Loader, Input } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import { createElection } from '../../contract/electionMaster'
-import { BACKEND_URL } from '../../const_val';
+import { base64ToBytes32 } from '../../contract/util'
+import { BACKEND_URL, CLIENT_URL, NO_CLIENT_URL } from '../../const_val';
 
 const [IDLE, BUSY, ERROR] = [0, 1, 2];
 const tableRows = 3;
@@ -11,7 +12,6 @@ const tableCols = 3;
 /*
 TODOs
 - Add restrictions
-- Connect to web3
 */
 
 class CreateElection extends React.Component {
@@ -27,6 +27,8 @@ class CreateElection extends React.Component {
       voters: {},
       tellersPage: 1,
       tellers: {},
+      accumBase: "Ag==",
+      linkBase: "Ag==",
       redirect: false
     }
     this.title = "";
@@ -36,6 +38,7 @@ class CreateElection extends React.Component {
     this.endDate = 0;
     this.endTime = 0;
     this.users = [];
+    this.emailToPub = {};
 
     this.getUsers();
   }
@@ -58,6 +61,9 @@ class CreateElection extends React.Component {
           this.users.forEach(user => {
             tellers[user.email] = false;
           })
+          this.users.forEach(user => {
+            this.emailToPub[user.email] = user.sigPubKey;
+          })
           this.setState({usersState: IDLE, voters, tellers});
         })
       }
@@ -66,6 +72,51 @@ class CreateElection extends React.Component {
       this.setState({usersState: ERROR});
       console.error(err);
     });
+  }
+
+  getRandom(callback) {
+    fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/getRandom?min=2")
+    .then(res => {
+      if(res.status === 200) {
+        res.text()
+        .then(data => {
+          callback(data);
+        })
+      }
+      else {
+        callback("Ag==");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      callback("Ag==")
+    })
+  }
+
+  async getAccumVoters(accumBase, voters) {
+    let ret = "";
+    await fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/genAccumVoters", {
+      method: 'POST',
+      body: JSON.stringify({accumBase, voters}),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    })
+    .then(res => {
+      if(res.status === 200) {
+        return res.text()
+      }
+      else {
+        throw new Error("Generate accumulated voters failed");
+      }
+    })
+    .then(data => {
+      ret = data;
+    })
+    .catch(err => {
+      console.error(err);
+    })
+    return ret;
   }
 
   handleUserClicked(email, selectedDict) {
@@ -164,20 +215,38 @@ class CreateElection extends React.Component {
     )
   }
 
-  onSubmit(e) {
+  async onSubmit(e) {
     this.setState({createState: BUSY});
-    console.log("State: isbusy", this.state.createState);
     e.preventDefault();
+    if(!localStorage['sigPubKey']) {
+      this.setState(state => {
+        state.createState = ERROR;
+        state.err = "You are not logged in!";
+        return state;
+      })
+      return;
+    }
     const [title, description] = [this.title, this.description];
     const [begin, end] =  [Date.parse(this.beginDate + " " + this.beginTime)/1000, Date.parse(this.endDate + " " + this.endTime)/1000];
     const choices = this.state.choices;
-    let [voters, tellers] = [[], []];
+    let [voters, votersPubKey, tellers] = [[], [], []];
     for(let [user, selected] of Object.entries(this.state.voters)) {
-      if(selected) voters.push(user);
+      if(selected) {
+        voters.push(user);
+        votersPubKey.push(this.emailToPub[user]);
+      }
     }
     for(let [user, selected] of Object.entries(this.state.tellers)) {
-      if(selected) tellers.push(user);
+      if(selected) {
+        const _teller = base64ToBytes32(this.emailToPub[user]);
+        for(let i = 0;i < _teller.length;i++) tellers.push(_teller[i]);
+      }
     }
+    const accumBase = base64ToBytes32(this.state.accumBase);
+    const linkBase = base64ToBytes32(this.state.linkBase);
+    const accumVoters = base64ToBytes32(await this.getAccumVoters(this.state.accumBase, votersPubKey));
+    const admin = base64ToBytes32(localStorage['sigPubKey']);
+    console.log("[Tellers]", tellers)
 
     const onHash = hash => {
       const link = "https://ropsten.etherscan.io/tx/"+hash;
@@ -214,7 +283,17 @@ class CreateElection extends React.Component {
       })
     }
     
-    createElection(title, description, begin, end, choices, onHash, onConfirmed);
+    createElection(
+      begin,
+      end,
+      tellers,
+      admin,
+      accumBase,
+      linkBase,
+      accumVoters,
+      onHash,
+      onConfirmed
+    );
   }
 
   render() {
@@ -303,6 +382,38 @@ class CreateElection extends React.Component {
             <Form.Field>
               <label>Tellers</label>
               {this.state.usersState === IDLE?this.genUsersTable(this.state.tellersPage, this.state.tellers, "tellers"):<Loader>Loading</Loader>}
+            </Form.Field>
+            <Form.Field>
+              <label>Accumulator Base</label>
+              <Form.Group>
+                <Form.Input 
+                  type="text"
+                  value={this.state.accumBase}
+                  onChange={e => this.setState({accumBase: e.target.value})}
+                  width={14}
+                />
+                <Form.Button
+                  content="Auto"
+                  type="button"
+                  onClick={_ => { this.getRandom(data => this.setState({accumBase: data}))}}
+                />
+              </Form.Group>
+            </Form.Field>
+            <Form.Field>
+              <label>Linkable Tag Base</label>
+              <Form.Group>
+                <Form.Input 
+                  type="text"
+                  value={this.state.linkBase}
+                  onChange={e => this.setState({linkBase: e.target.value})}
+                  width={14}
+                />
+                <Form.Button
+                  content="Auto"
+                  type="button"
+                  onClick={_ => { this.getRandom(data => this.setState({linkBase: data}))}}
+                />
+              </Form.Group>
             </Form.Field>
             {this.state.err
               ?
