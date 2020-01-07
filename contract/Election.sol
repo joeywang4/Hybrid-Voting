@@ -33,7 +33,8 @@ contract VerifyInterface {
 
 contract Election {
     /* Interface */
-    address VerifyAddress = 0x4d2191C541a8b0b8824309C60e803FEC09999aDA; 
+    
+    address VerifyAddress = 0xa8D62CE932894CC46D571d3E608FB514959Ec4C5; 
     VerifyInterface VerifyContract = VerifyInterface(VerifyAddress);
 
     /* Events */
@@ -62,8 +63,18 @@ contract Election {
         bytes32(0x11093ccc8bcbbf7adc039510d65bb8e6cbdfb282a99f79ccec44e83d867aea44),
         bytes32(0x234c1620817711c42c3aa84178ea6c924e31a36bc3cc82c6757a4a8e2e8f53c4)
     ];
-    bytes32[4] elgamalBase;
-    bytes32[4] elgamalP;
+    bytes32[4] elgamalBase = [
+        bytes32(0x86903f29644f242c0963c68203b0b2aee30f03f91d0782729783075abfca89a0),
+        bytes32(0x07c6ac738ccfb57a76221f2d6a5f00b6249aab653ec07d15ace1cffefeeeff91),
+        bytes32(0x82b1683ed0173e6938435d1ce601bc3734f24c77c7b6b881d0e835c27723ba31),
+        bytes32(0x6e7a5b5915bd1a3d2dfd136c5c89663262bdc5ad4dfff4186818268c00858ec4)
+    ]; // g = 94493677743813493826267353152185494723850760297241471026510779195400035093064059658637922030753272252229887777337187403118339807328050159324387981312700218892075674706253481675394746745490735054028566111895967522695535805037290910029370742764336097606181330224189064370356170285380952152352173575800325770948
+    bytes32[4] elgamalP = [
+        bytes32(0x922d4cf5211046382947a6b76da9def5ddd8718e6f5b84bd664a77c0d94d038c),
+        bytes32(0xfa9b8604690073cca075dad2ce7a6a0f72a3e1c47fb00238b279cf7e908574c5),
+        bytes32(0x49d664940253b78a1aa901720d3fa053ddfbcdcd0905a8a90c6eb608392d391c),
+        bytes32(0x5b1027ad538528c2a7b90f972f5d192aaa8260607065118388e630b7dab03753)
+    ]; // p = 102648948995783859628452780494099717822287635561446366331725315272293345387669956950442649074663459456478568581507919894184222367303997219280688270532431124107487597857112966811552274209131788409322689569545240612203934874336065981768695371646361093913954082413486674211271105045172480352791209828988862084947
 
     /* Data Members */
     uint64 public begin;
@@ -120,12 +131,7 @@ contract Election {
     }
     
     function isValidRSASig(bytes32[4] memory message, bytes32[4] memory signature, bytes32[4] memory pubKey) public returns (bool) {
-        bytes32[4] memory e = [
-            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-            bytes32(0x0000000000000000000000000000000000000000000000000000000000010001)
-        ];
+        bytes32[4] memory e = [bytes32(0), bytes32(0), bytes32(0), bytes32(uint(65537))];
         return keccak256(abi.encodePacked(VerifyContract.modexpWrapper(message, e, pubKey))) == keccak256(abi.encodePacked(signature));
     }
     
@@ -134,6 +140,8 @@ contract Election {
     function getAdmin() public view returns(bytes32[sigPubLength/32] memory) { return admin; }
     function getAccumBase() public view returns(bytes32[4] memory) { return accumBase; }
     function getLinkBase() public view returns(bytes32[4] memory) { return linkBase; }
+    function getAccumVoters() public view returns(bytes32[4] memory) { return accumVoters; }
+    function getElgamalPubKey() public view returns(bytes32[4] memory) { return elgamalPubKey; }
     function getSigN() public view returns(bytes32[4] memory) { return sigN; }
     function getSigPhi() public view returns(bytes32[4] memory) { return sigPhi; }
     
@@ -176,148 +184,34 @@ contract Election {
         return true;
     }
     
-    function verifyAll(uint32 _voterId) public {
-        verify1(_voterId);
-        verify2(_voterId);
-        verify3(_voterId);
-        verify4(_voterId);
-        verify5(_voterId);
-        verify6(_voterId);
-        verify7(_voterId);
-        verify8(_voterId);
-        verify9(_voterId);
-        verifyL(_voterId);
-    }
-    
-    function verify1(uint32 _voterId) public {
+    uint32[7][9] index = [
+    //    T,  g,   h,  s1,  s2,  e, 
+        [ 0, 36,  36,  56,  56,  60, 0],
+        [ 4, 36,  40,  61,  65,  69, 1],
+        [ 8, 36,  44,  70,  74,  78, 1],
+        [12,  0,  52,  79,  83,  87, 1], // 0 is accumBase
+        [16, 36,  48,  88,  92,  96, 1],
+        [20, 36,  36,  97,  97, 101, 0],
+        [24, 36,  36, 102, 102, 106, 0],
+        [28,  0,  52, 107, 111, 115, 1], // 0 is accumbase
+        [32, 36,  48, 116, 120, 124, 1]
+    ];
+        
+    function VerifySignature (uint32 _voterId, uint32 i) public{
         bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T1 = [signature[0],signature[1],signature[2],signature[3]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory N = sigN;
+        bytes32[4] memory T = [signature[index[i][0]],signature[index[i][0]+1],signature[index[i][0]+2],signature[index[i][0]+3]];
+        bytes32[4] memory g;
+            if (index[i][1] == 0) g = accumBase;
+            else g = [signature[index[i][1]],signature[index[i][1]+1],signature[index[i][1]+2],signature[index[i][1]+3]];
+        bytes32[4] memory h = [signature[index[i][2]],signature[index[i][2]+1],signature[index[i][2]+2],signature[index[i][2]+3]];
         bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s1 = [signature[56],signature[57],signature[58],signature[59]];
-        bytes32 e1 = signature[60];
-         
-        ballots[_voterId].validator[0] = VerifyContract.DiscreteLogVerify(T1,g,N,m,s1,e1);
-    }
-    
-    function verify2(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T2 = [signature[4],signature[5],signature[6],signature[7]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory h = [signature[40],signature[41],signature[42],signature[43]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s2_1 = [signature[61],signature[62],signature[63],signature[64]];
-        bytes32[4] memory s2_2 = [signature[65],signature[66],signature[67],signature[68]];
-        bytes32 e2 = signature[69];
-         
-        ballots[_voterId].validator[1] = VerifyContract.DoubleDiscreteLogVerify(T2,g,h,N,m,s2_1,s2_2,e2);
-    }
-    
-    function verify3(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T3 = [signature[8],signature[9],signature[10],signature[11]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory s = [signature[44],signature[45],signature[46],signature[47]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s3_1 = [signature[70],signature[71],signature[72],signature[73]];
-        bytes32[4] memory s3_2 = [signature[74],signature[75],signature[76],signature[77]];
-        bytes32 e3 = signature[78];
-         
-        ballots[_voterId].validator[2] = VerifyContract.DoubleDiscreteLogVerify(T3,g,s,N,m,s3_1,s3_2,e3);
-    }
-    
-    function verify4(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T4 = [signature[12],signature[13],signature[14],signature[15]];
-        bytes32[4] memory u = accumBase;
-        bytes32[4] memory y = [signature[52],signature[53],signature[54],signature[55]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s4_1 = [signature[79],signature[80],signature[81],signature[82]];
-        bytes32[4] memory s4_2 = [signature[83],signature[84],signature[85],signature[86]];
-        bytes32 e4 = signature[87];
-         
-        ballots[_voterId].validator[3] = VerifyContract.DoubleDiscreteLogVerify(T4,u,y,N,m,s4_1,s4_2,e4);
-    }
-
-    function verify5(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T5 = [signature[16],signature[17],signature[18],signature[19]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory t = [signature[48],signature[49],signature[50],signature[51]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s5_1 = [signature[88],signature[89],signature[90],signature[91]];
-        bytes32[4] memory s5_2 = [signature[92],signature[93],signature[94],signature[95]];
-        bytes32 e5 = signature[96];
-         
-        ballots[_voterId].validator[4] = VerifyContract.DoubleDiscreteLogVerify(T5,g,t,N,m,s5_1,s5_2,e5);
-    }
-
-    function verify6(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T6 = [signature[20],signature[21],signature[22],signature[23]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s6 = [signature[97],signature[98],signature[99],signature[100]];
-        bytes32 e6 = signature[101];
-         
-        ballots[_voterId].validator[5] = VerifyContract.DiscreteLogVerify(T6,g,N,m,s6,e6);
-    }
-
-    function verify7(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T7 = [signature[24],signature[25],signature[26],signature[27]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s7 = [signature[102],signature[103],signature[104],signature[105]];
-        bytes32 e7 = signature[106];
-         
-        ballots[_voterId].validator[6] = VerifyContract.DiscreteLogVerify(T7,g,N,m,s7,e7);
-    }
-
-    function verify8(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T8 = [signature[28],signature[29],signature[30],signature[31]];
-        bytes32[4] memory u = accumBase;
-        bytes32[4] memory y = [signature[52],signature[53],signature[54],signature[55]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s8_1 = [signature[107],signature[108],signature[109],signature[110]];
-        bytes32[4] memory s8_2 = [signature[111],signature[112],signature[113],signature[114]];
-        bytes32 e8 = signature[115];
-         
-        ballots[_voterId].validator[7] = VerifyContract.DoubleDiscreteLogVerify(T8,u,y,N,m,s8_1,s8_2,e8);
-    }
-
-    function verify9(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T9 = [signature[32],signature[33],signature[34],signature[35]];
-        bytes32[4] memory g = [signature[36],signature[37],signature[38],signature[39]];
-        bytes32[4] memory t = [signature[48],signature[49],signature[50],signature[51]];
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory s9_1 = [signature[116],signature[117],signature[118],signature[119]];
-        bytes32[4] memory s9_2 = [signature[120],signature[121],signature[122],signature[123]];
-        bytes32 e9 = signature[124];
-         
-        ballots[_voterId].validator[8] = VerifyContract.DoubleDiscreteLogVerify(T9,g,t,N,m,s9_1,s9_2,e9);
-    }
-
-    function verifyL(uint32 _voterId) public {
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory y_hat = ballots[_voterId].linkableTag;
-        bytes32[4] memory g_theta = linkBase;
-        bytes32[4] memory N = sigN;
-        bytes32[4] memory m = ballots[_voterId].message;
-        bytes32[4] memory sL = [signature[125],signature[126],signature[127],signature[128]];
-        bytes32 eL = signature[129];
-         
-        ballots[_voterId].validator[9] = VerifyContract.DiscreteLogVerify(y_hat,g_theta,N,m,sL,eL);
+        bytes32[4] memory s1 = [signature[index[i][3]],signature[index[i][3]+1],signature[index[i][3]+2],signature[index[i][3]+3]];
+        bytes32[4] memory s2 = [signature[index[i][4]],signature[index[i][4]+1],signature[index[i][4]+2],signature[index[i][4]+3]];
+        bytes32 e = signature[index[i][5]];
+        
+        if (index[i][6] == 0) 
+            ballots[_voterId].validator[i] = VerifyContract.DiscreteLogVerify(T,g,sigN,m,s1,e);
+        else 
+            ballots[_voterId].validator[i] = VerifyContract.DoubleDiscreteLogVerify(T,g,h,sigN,m,s1,s2,e);
     }
 }

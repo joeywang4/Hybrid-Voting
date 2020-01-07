@@ -1,8 +1,8 @@
-pragma solidity >=0.4.20 <0.6;
+pragma solidity >=0.5 <0.6;
 
 import "./BigInt.sol";
 
-contract VerifySignature {
+contract Verify {
     using BigNumber for *; 
     event VerifyResult(bool result);
     /*

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity >=0.5 <0.6;
 
 library BigNumber {
     function bitLength(uint x) internal pure returns (uint) {
@@ -149,7 +149,7 @@ library BigNumber {
         }
     }
 
-    function shiftBitsRight(bytes x, uint bitShift) internal pure returns (bytes memory y) {
+    function shiftBitsRight(bytes memory x, uint bitShift) internal pure returns (bytes memory y) {
         if (bitShift == 0) return x;
         require(bitShift <= 255);
         require(x.length % 32 == 0);
