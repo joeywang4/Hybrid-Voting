@@ -1,4 +1,5 @@
 from util import randrange, Hash, int_to_str
+from Crypto.Util import number
 
 def DiscreteLogSign(y, g, x, p, q, m):
   '''
@@ -8,6 +9,7 @@ def DiscreteLogSign(y, g, x, p, q, m):
   r = pow(g, k, p)
   e = Hash(r, m)
   s = (k-x*e)%q
+  assert(DiscreteLogVerify(y,g,p,m,s,e))
   return (s, e)
 
 def DiscreteLogVerify(y, g, p, m, s, e):
@@ -25,6 +27,7 @@ def DoubleDiscreteLogSign(y, g1, g2, x1, x2, p, q, m):
   e = Hash(r, m)
   s1 = (k1-x1*e)%q
   s2 = (k2-x2*e)%q
+  assert(DoubleDiscreteLogVerify(y,g1,g2,p,m,s1,s2,e))
   return (s1, s2, e)
 
 def DoubleDiscreteLogVerify(y, g1, g2, p, m, s1, s2, e):
@@ -60,7 +63,6 @@ def InRangeVerify(y, g, p, q, b, m, s, e):
   return e_v == e
 
 if __name__ == "__main__":
-  from Crypto.Util import number
   p = number.getStrongPrime(512) # might be safe prime, but it is too slow
   q = number.getStrongPrime(512) # might be safe prime, but it is too slow
 

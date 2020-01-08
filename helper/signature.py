@@ -85,10 +85,10 @@ def sign_ballot(list_of_pks, key_pair, m, param):
 
   y_hat = pow(g_theta, sk_p+sk_q, N_sig)
   w = u # witness
-  product_of_ther_pk = 1
+  product_of_other_pk = 1
   for other_pk in list_of_pks:
     w = pow(w, other_pk, N_sig)
-    product_of_ther_pk = (product_of_ther_pk * other_pk) % N_sig
+    product_of_other_pk = (product_of_other_pk * other_pk) % phiN_sig
   v = pow(w, pk, N_sig) # all public key accumulated
 
   r = randrange(2, N_sig) # a secret random seed need to be proved
@@ -106,11 +106,11 @@ def sign_ballot(list_of_pks, key_pair, m, param):
   s1, e1 = SPK.DiscreteLogSign(T1, g, r, N_sig, phiN_sig, m) # sign T1
   s2_1, s2_2, e2 = SPK.DoubleDiscreteLogSign(T2, g, h, pk, r, N_sig, phiN_sig, m) # sign T2
   s3_1, s3_2, e3 = SPK.DoubleDiscreteLogSign(T3, g, s, sk_q, r, N_sig, phiN_sig, m) # sign T3
-  s4_1, s4_2, e4 = SPK.DoubleDiscreteLogSign(T4, u, y, product_of_ther_pk, r, N_sig, phiN_sig, m) # sign T4
+  s4_1, s4_2, e4 = SPK.DoubleDiscreteLogSign(T4, u, y, product_of_other_pk, r, N_sig, phiN_sig, m) # sign T4
   s5_1, s5_2, e5 = SPK.DoubleDiscreteLogSign(T5, g, t, sk_p, r, N_sig, phiN_sig, m) # sign T5
   s6, e6 = SPK.DiscreteLogSign(T6, g, (pk*r)%phiN_sig, N_sig, phiN_sig, m) # sign T6
   s7, e7 = SPK.DiscreteLogSign(T7, g, (sk_q*r)%phiN_sig, N_sig, phiN_sig, m) # sign T7
-  s8_1, s8_2, e8 = SPK.DoubleDiscreteLogSign(T8, u, y, (pk*product_of_ther_pk)%phiN_sig, (pk*r)%phiN_sig,N_sig, phiN_sig, m) # sign T8
+  s8_1, s8_2, e8 = SPK.DoubleDiscreteLogSign(T8, u, y, (pk*product_of_other_pk)%phiN_sig, (pk*r)%phiN_sig,N_sig, phiN_sig, m) # sign T8
   s9_1, s9_2, e9 = SPK.DoubleDiscreteLogSign(T9, g, t, pk, (2*sk_q*r)%phiN_sig, N_sig, phiN_sig, m) # sign T9
   sL, eL = SPK.DiscreteLogSign(y_hat, g_theta, (sk_p+sk_q)%phiN_sig, N_sig, phiN_sig, m) # sign linkable tag
 
@@ -161,13 +161,14 @@ if __name__ == "__main__":
 
   param = gen_sig_param()
   u, g_theta, N_sig, phiN_sig, p_sig, q_sig = param
-  print ("accumBase" , intToBytesArray(u, 128))
-  print ("g_theta" , intToBytesArray(g_theta, 128))
+  #print ("accumBase" , intToBytesArray(u, 128))
+  #print ("g_theta" , intToBytesArray(g_theta, 128))
 
   list_of_pks = [pk2, pk3, pk4, pk5]
   key_pair = (sk1_p, sk1_q, pk1)
   m = 1234567894565231545315
   v, y_hat, T1, T2, T3, T4, T5, T6, T7, T8, T9, g, h, s, t, y, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL = sign_ballot(list_of_pks, key_pair, m, param)
+  
   print("m" , intToBytesArray(m, 128))
   print("v" , intToBytesArray(v, 128))
   print("y_hat" , intToBytesArray(y_hat, 128))
