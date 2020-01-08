@@ -51,3 +51,7 @@ def Hash(*args):
   message = keccak.new(data=message, digest_bits=256).digest()
   message = int.from_bytes(message, 'big', signed=False)
   return message
+
+def intToBytesArray(x, n):
+  h = hex(x)[2:].rjust(2*n, '0')
+  return ["0x"+h[i*64:(i+1)*64] for i in range(len(h)//64)] 

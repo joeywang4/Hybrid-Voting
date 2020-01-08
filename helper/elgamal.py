@@ -1,4 +1,4 @@
-from util import randrange
+from util import randrange, intToBytesArray
 from Crypto.PublicKey import ElGamal
 from Crypto.Util import number
 
@@ -57,5 +57,10 @@ if __name__ == "__main__":
   m = randrange(2, N)
   sig = RSA_siganture(sk1_p, sk1_q, m)
 
-  print(pow(sig,65537,sk1_p*sk1_q) == m)
-  print(pow(sig,65537,N) == m)
+  # print(pow(sig,65537,sk1_p*sk1_q) == m)
+  # print(pow(sig,65537,N) == m)
+
+  print (intToBytesArray(m, 128))
+  print (intToBytesArray(sig, 128))
+  print (intToBytesArray(pk1, 128))
+  print (intToBytesArray(N, 128))

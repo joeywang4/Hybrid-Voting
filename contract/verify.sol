@@ -103,4 +103,11 @@ contract Verify {
         }
         return [r1,r2,r3,r4];
     }
+    // note that pubKey is siganture pubKey, we need to transform it into RSA public key 
+    function isValidRSASig(bytes32[4] memory message, bytes32[4] memory signature, bytes32[4] memory pubKey) public returns (bool) {
+        bytes memory e = BigNumber.toBigInt(uint(65537));
+        bytes memory N;
+        N = BigNumber.shiftBitsRight(BigNumber.bigsub(abi.encodePacked(pubKey), BigNumber.toBigInt(uint(1))), 1);
+        return keccak256(abi.encodePacked(BigNumber.modexp(abi.encodePacked(signature), e, N))) == keccak256(abi.encodePacked(message));
+    }
 }
