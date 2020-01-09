@@ -6,7 +6,7 @@ web3.eth.net.getNetworkType()
   if(name !== "ropsten") console.error("Please switch to ropsten testnet!");
 });
 
-const addr = "0x821C89d8e365D52D85a932D9E9509F1Fe2bBBA52";
+const addr = "0x29048404399DAbdE3c4895F102F1385190e1b564";
 const abi = [
 	{
 		"constant": true,
@@ -21,20 +21,6 @@ const abi = [
 			{
 				"name": "",
 				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getElectionsCount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -71,12 +57,30 @@ const abi = [
 			{
 				"name": "_accumVoters",
 				"type": "bytes32[4]"
+			},
+			{
+				"name": "_signature",
+				"type": "bytes32[4]"
 			}
 		],
 		"name": "createElection",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getElectionsCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -92,7 +96,6 @@ const abi = [
 		"type": "event"
 	}
 ]
-
 
 const getElectionAddr = async id => {
   const Contract = new web3.eth.Contract(abi, addr);
@@ -124,7 +127,7 @@ const getAllElectionsAddr = async (updater = null) => {
   return elections;
 }
 
-const createElection = async (begin, end, tellers, admin, accumBase, linkBase, accumVoters, onHash, onConfirmed) => {
+const createElection = async (begin, end, tellers, admin, accumBase, linkBase, accumVoters, signature, onHash, onConfirmed) => {
   await window.ethereum.enable();
   const accounts = await web3.eth.getAccounts();
   if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
@@ -139,7 +142,8 @@ const createElection = async (begin, end, tellers, admin, accumBase, linkBase, a
     admin,
     accumBase,
     linkBase,
-    accumVoters
+    accumVoters,
+    signature
   ).send({from: Account})
   .on('transactionHash', onHash)
   .on('confirmation', (confirmationNumber, receipt) => {

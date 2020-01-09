@@ -64,19 +64,31 @@ router.post('/election', async (req, res) => {
   }
 
   // Check existence of same title or address
-  const pass = await Election.find({$or: [{'title': _name}, {'address': _address}]})
+  const pass = await Election.find({$or: [{'title': _title}, {'address': _address}]})
   .then(_election => {
-    if(_user.length > 0) res.status(400).send("Title already used or same election already created!");
+    if(_election.length > 0) res.status(400).send("Title already used or same election already created!");
     else return true;
   })
   .catch(err => errHandler(err, res, "Check existence error"));
   if(!pass) return;
 
+  let _voterIds = [];
+  for(let i = 0;i < _voters.length;i++) {
+    let id = undefined;
+    await User.findOne({email: _voters[i]})
+    .then(user => {
+      id = user._id;
+      return;
+    })
+    .catch(error => { console.error(error); });
+    _voterIds.push(id);
+  }
+
   const newElection = Election({
     title: _title,
     description: _description, 
     choices: _choices,
-    voters: _voters,
+    voters: _voterIds,
     address: _address,
     ballots: []
   });
@@ -86,7 +98,7 @@ router.post('/election', async (req, res) => {
 
   if(done) {
     let d = new Date();
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Register success: ${_name} ${_email}`);
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create election success: ${_title} ${_address}`);
     res.status(200).send("Create election success");
   }
   else res.status(400).send("Create election failed");

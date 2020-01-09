@@ -175,6 +175,7 @@ class RegisterForm extends React.Component {
               <Form.Button
                 content="Upload Key"
                 loading={this.state.uploadBusy}
+                type="button"
                 onClick={() => this.fileInputRef.current.click()}
               />
               <input
@@ -184,7 +185,7 @@ class RegisterForm extends React.Component {
                 hidden
                 onInput={this.keyUploaded}
               />
-              <Form.Button>
+              <Form.Button type="button">
                 <a href={"data:text/plain,"+this.state.file} download="key.json" style={{textDecoration: "None"}} >
                   Download Key
                 </a>

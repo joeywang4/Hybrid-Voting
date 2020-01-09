@@ -29,6 +29,7 @@ class CreateElection extends React.Component {
       tellers: {},
       accumBase: "Ag==",
       linkBase: "Ag==",
+      privateKey: "",
       redirect: false
     }
     this.title = "";
@@ -39,6 +40,7 @@ class CreateElection extends React.Component {
     this.endTime = 0;
     this.users = [];
     this.emailToPub = {};
+    this.fileInputRef = React.createRef();
 
     this.getUsers();
   }
@@ -122,6 +124,57 @@ class CreateElection extends React.Component {
   handleUserClicked(email, selectedDict) {
     selectedDict[email] = !selectedDict[email];
     this.setState(state => state);
+  }
+
+  async genSignature(begin, end, tellers, admin, accumBase, linkBase, accumVoters) {
+    if(this.state.privateKey === "") return false;
+    let ret = "";
+    await fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/electionSignature", {
+      method: 'POST',
+      body: JSON.stringify({begin, end, tellers, admin, accumBase, linkBase, accumVoters, sigPrivKey: this.state.privateKey}),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    })
+    .then(res => {
+      if(res.status === 200) {
+        return res.text()
+      }
+      else {
+        this.setState({err: "Calculation tool error", createState: ERROR});
+        throw new Error("Generate election signature failed");
+      }
+    })
+    .then(data => {
+      ret = data;
+    })
+    .catch(err => {
+      this.setState({err: "Calculation tool error", createState: ERROR});
+      console.error(err);
+    })
+    return ret;
+  }
+
+  handleUploadPrivateKey = () => {
+    const file = this.fileInputRef.current.files[0];
+    const reader = new FileReader();
+    this.setState(state => {
+      state.uploadBusy = true;
+      return state;
+    })
+    reader.onload = e => {
+      const loaded = JSON.parse(e.target.result);
+      if(!("sigPrivKey" in loaded)) {
+        this.setState({err: "Invalid Key File!"});
+        return false;
+      }
+      this.setState({privateKey: loaded['sigPrivKey']});
+      console.log("Private Key:", this.state.privateKey);
+    }
+    reader.onerror = _ => {
+      alert("You uploaded an invalid file");
+    }
+    reader.readAsText(file);
   }
 
   setPage(name, page) {
@@ -246,7 +299,8 @@ class CreateElection extends React.Component {
     const linkBase = base64ToBytes32(this.state.linkBase);
     const accumVoters = base64ToBytes32(await this.getAccumVoters(this.state.accumBase, votersPubKey));
     const admin = base64ToBytes32(localStorage['sigPubKey']);
-    console.log("[Tellers]", tellers)
+    const signature = base64ToBytes32(await this.genSignature(begin, end, tellers, admin, accumBase, linkBase, accumVoters));
+    console.log(signature);
 
     const onHash = hash => {
       const link = "https://ropsten.etherscan.io/tx/"+hash;
@@ -267,19 +321,55 @@ class CreateElection extends React.Component {
     }
 
     const onConfirmed = (confirmationNumber, receipt) => {
-      const link = "/elections"
-      this.setState(state => {
-        state.createState = IDLE;
-        state.msg = (
-          <React.Fragment>
-            <Icon name="check" />
-            <Message.Content>
-              <Message.Header>Creation Success!</Message.Header>
-              Check your election <Link to={link}>here</Link>
-            </Message.Content>
-          </React.Fragment>
-        );
-        return state;
+      console.log("[*] Confirmed.", confirmationNumber, receipt);
+      const setError = () => {
+        this.setState(state => {
+          state.createState = ERROR;
+          state.err = (
+            <React.Fragment>
+              <Icon name="close" />
+              <Message.Content>
+                <Message.Header>Transaction Failed!</Message.Header>
+                Create election failed.
+              </Message.Content>
+            </React.Fragment>
+          )
+        })
+        return;
+      }
+      if(!("NewElection" in receipt['events'])) {
+        setError();
+      }
+      const address = receipt['events']['NewElection'][0]['address'];
+      fetch(BACKEND_URL+"/election", {
+        method: "POST",
+        body: JSON.stringify({title, description, choices, voters, address}),
+        headers: {'authorization': localStorage['token'], 'content-type': "application/json"}
+      })
+      .then(res => {
+        if(res.status === 200) {
+          const link = `/elections?address=${address}`;
+          this.setState(state => {
+            state.createState = IDLE;
+            state.msg = (
+              <React.Fragment>
+                <Icon name="check" />
+                <Message.Content>
+                  <Message.Header>Creation Success!</Message.Header>
+                  Check your election <Link to={link}>here</Link>
+                </Message.Content>
+              </React.Fragment>
+            );
+            return state;
+          })
+        }
+        else {
+          setError();
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        setError();
       })
     }
     
@@ -291,6 +381,7 @@ class CreateElection extends React.Component {
       accumBase,
       linkBase,
       accumVoters,
+      signature,
       onHash,
       onConfirmed
     );
@@ -412,6 +503,31 @@ class CreateElection extends React.Component {
                   content="Auto"
                   type="button"
                   onClick={_ => { this.getRandom(data => this.setState({linkBase: data}))}}
+                />
+              </Form.Group>
+            </Form.Field>
+            <Form.Field>
+              <label>Signature Private Key</label>
+              <Form.Group>
+                <Form.Input 
+                  type="text"
+                  value={this.state.privateKey}
+                  onChange={e => this.setState({privateKey: e.target.value})}
+                  width={14}
+                />
+                <Form.Button
+                  content="Upload"
+                  type="button"
+                  onClick={() => {
+                    this.fileInputRef.current.click()
+                  }}
+                />
+                <input
+                  ref={this.fileInputRef}
+                  type="file"
+                  accept=".json"
+                  hidden
+                  onInput={this.handleUploadPrivateKey}
                 />
               </Form.Group>
             </Form.Field>

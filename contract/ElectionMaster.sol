@@ -20,9 +20,10 @@ contract ElectionMaster {
         bytes32[sigPubLength/32] memory _admin,
         bytes32[4] memory _accumBase,
         bytes32[4] memory _linkBase,
-        bytes32[4] memory _accumVoters
+        bytes32[4] memory _accumVoters,
+        bytes32[4] memory _signature
     ) public {
-        uint id = Elections.push(address(new Election(_begin, _end, _tellers, _admin, _accumBase, _linkBase, _accumVoters)));
+        uint id = Elections.push(address(new Election(_begin, _end, _tellers, _admin, _accumBase, _linkBase, _accumVoters, _signature)));
         emit NewElection(Elections[id-1]);
     }
 
