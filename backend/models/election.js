@@ -15,7 +15,7 @@ const ElectionSchema = new Schema({
     required: [true, 'Choices are required.']
   },
   voters: {
-	  type: [Schema.Types.ObjectId],
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 	  required: [true, 'Voters are required.']
   },
   address: {
@@ -23,7 +23,7 @@ const ElectionSchema = new Schema({
 	  required: [true, 'Address of election is required.']
   },
   ballots: {
-    type: [Schema.Types.ObjectId],
+    type: [{ type: Schema.Types.ObjectId, ref: 'Ballot' }],
     required: [true, 'Ballots are required']
   }
 });

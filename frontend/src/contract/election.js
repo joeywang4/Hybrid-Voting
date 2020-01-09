@@ -45,33 +45,6 @@ const abi = [
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "message",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "signature",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "pubKey",
-				"type": "bytes32[4]"
-			}
-		],
-		"name": "isValidRSASig",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"constant": true,
 		"inputs": [],
 		"name": "begin",
@@ -223,6 +196,20 @@ const abi = [
 			{
 				"name": "",
 				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTellersSecret",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4][]"
 			}
 		],
 		"payable": false,
@@ -527,6 +514,20 @@ const abi = [
 		"constant": false,
 		"inputs": [
 			{
+				"name": "_voterId",
+				"type": "uint32"
+			}
+		],
+		"name": "VerifyAll",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
 				"name": "tellerId",
 				"type": "uint32"
 			},
@@ -581,6 +582,20 @@ const abi = [
 	{
 		"constant": true,
 		"inputs": [],
+		"name": "getTellersPubShare",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4][]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
 		"name": "end",
 		"outputs": [
 			{
@@ -621,6 +636,10 @@ const abi = [
 			{
 				"name": "_accumVoters",
 				"type": "bytes32[4]"
+			},
+			{
+				"name": "_signature",
+				"type": "bytes32[4]"
 			}
 		],
 		"payable": false,
@@ -653,4 +672,188 @@ const abi = [
 	}
 ]
 
-export {};
+const sendElgamalPubShare = async (_tellerId, _h, _signature, address,  onHash, onConfirmed) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  await window.ethereum.enable();
+  const accounts = await web3.eth.getAccounts();
+  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
+  const Account = accounts[0];
+
+  let flag = false;
+  Contract.methods.sendElgamalPubShare(
+    _tellerId,
+    _h,
+    _signature
+  ).send({from: Account})
+  .on('transactionHash', onHash)
+  .on('confirmation', (confirmationNumber, receipt) => {
+    if(!flag) {
+      flag = true;
+      onConfirmed(confirmationNumber, receipt);
+    }
+  });
+}
+
+const sendElgamalSecret = async (_tellerId, _secret, _signature, address,  onHash, onConfirmed) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  await window.ethereum.enable();
+  const accounts = await web3.eth.getAccounts();
+  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
+  const Account = accounts[0];
+
+  let flag = false;
+  Contract.methods.sendElgamalSecret(
+    _tellerId,
+    _secret,
+    _signature
+  ).send({from: Account})
+  .on('transactionHash', onHash)
+  .on('confirmation', (confirmationNumber, receipt) => {
+    if(!flag) {
+      flag = true;
+      onConfirmed(confirmationNumber, receipt);
+    }
+  });
+}
+
+const getBegin = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.begin().call()
+  .then(data => data);
+}
+
+const getEnd = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.end().call()
+  .then(data => data);
+}
+
+const getTellers = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  const _tellers = await Contract.methods.getTellers().call()
+  .then(data => data);
+  if(!(Array.isArray(_tellers[0])) && _tellers.length%4 === 0) {
+    let resizedTellers = [];
+    for(let i = 0;i < Math.floor(_tellers.length/4);i++) {
+      for(let j = 0;j < 3;j++) resizedTellers.push(_tellers[4*i+j]);
+    }
+    return resizedTellers;
+  }
+  else return _tellers;
+}
+
+const getAdmin = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getAdmin().call()
+  .then(data => data);
+}
+
+const getAccumBase = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getAccumBase().call()
+  .then(data => data);
+}
+
+const getLinkBase = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getLinkBase().call()
+  .then(data => data);
+}
+
+const getAccumVoters = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getAccumVoters().call()
+  .then(data => data);
+}
+
+const getElgamalPubKey = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getElgamalPubKey().call()
+  .then(data => data);
+}
+
+const getSigN = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getSigN().call()
+  .then(data => data);
+}
+
+const getSigPhi = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getSigPhi().call()
+  .then(data => data);
+}
+
+const getTellersPubShare = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getTellersPubShare().call()
+  .then(data => data);
+}
+
+const getTellersSecret = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getTellersSecret().call()
+  .then(data => data);
+}
+
+const getElectionInfo = async address => {
+  const [
+    begin,
+    end,
+    tellers,
+    admin,
+    accumBase,
+    linkBase,
+    accumVoters,
+    elgamalPubKey,
+    sigN,
+    sigPhi,
+    tellersPubShare,
+    tellersSecret
+  ] = await Promise.all([
+    getBegin(address),
+    getEnd(address),
+    getTellers(address),
+    getAdmin(address),
+    getAccumBase(address),
+    getLinkBase(address),
+    getAccumVoters(address),
+    getElgamalPubKey(address),
+    getSigN(address),
+    getSigPhi(address),
+    getTellersPubShare(address),
+    getTellersSecret(address)
+  ]);
+  return {
+    begin,
+    end,
+    tellers,
+    admin,
+    accumBase,
+    linkBase,
+    accumVoters,
+    elgamalPubKey,
+    sigN,
+    sigPhi,
+    tellersPubShare,
+    tellersSecret
+  }
+}
+
+export {
+  sendElgamalPubShare,
+  sendElgamalSecret,
+  getBegin,
+  getEnd,
+  getTellers,
+  getAdmin,
+  getAccumBase,
+  getLinkBase,
+  getAccumVoters,
+  getElgamalPubKey,
+  getSigN,
+  getSigPhi,
+  getTellersPubShare,
+  getTellersSecret,
+  getElectionInfo,
+};

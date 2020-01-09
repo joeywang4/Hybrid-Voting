@@ -8,6 +8,7 @@ import Users from './container/users';
 import Me from './container/users/me';
 import User from './container/users/user';
 import Elections from './container/elections';
+import Election from './container/elections/Election';
 import CreateElection from './container/elections/CreateElection';
 import {BACKEND_URL, CLIENT_URL} from './const_val';
 import './App.css';
@@ -95,6 +96,12 @@ class App extends React.Component {
               <Route exact path="/login"><Login /></Route>
               <Route exact path="/register"><Register hasClient={this.state.hasClient} /></Route>
               <Route exact path="/elections"><Elections /></Route>
+              <Route exact path="/election">
+                {({ location }) => {
+                  const address = location.search.substring(9);
+                  return <Election hasClient={this.state.hasClient} address={address} />;
+                }}
+              </Route>
               <Route exact path="/create-election"><CreateElection hasClient={this.state.hasClient} /></Route>
               <Route path="/redirect/:name">
                 {({ match }) => {

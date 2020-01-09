@@ -125,14 +125,15 @@ contract Election {
 
     function sendElgamalPubShare(uint32 tellerId, bytes32[4] memory h, bytes32[4] memory signature) public {
         require(now < begin);
-        require(VerifyContract.isValidRSASig(h, signature, tellers[tellerId]), "Bad Signature");
+        require(keccak256(abi.encodePacked(tellersPubShare[tellerId])) == keccak256(abi.encodePacked([bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))])), "No Double Sharing");
+        require(VerifyContract.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(h))], signature, tellers[tellerId]), "Bad Signature");
         tellersPubShare[tellerId] = h;
         elgamalPubKey = VerifyContract.modmulWrapper(elgamalPubKey, h, elgamalP);
     }
 
     function sendElgamalSecret(uint32 tellerId, bytes32[4] memory secret, bytes32[4] memory signature) public {
         require(now > end);
-        require(VerifyContract.isValidRSASig(secret, signature, tellers[tellerId]), "Bad Signature");
+        require(VerifyContract.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(secret))], signature, tellers[tellerId]), "Bad Signature");
         require(keccak256(abi.encodePacked(VerifyContract.modexpWrapper(elgamalBase, secret, elgamalP))) == keccak256(abi.encodePacked(tellersPubShare[tellerId])), "Bad Secret");
         tellersSecret[tellerId] = secret;
     }
@@ -146,6 +147,8 @@ contract Election {
     function getElgamalPubKey() public view returns(bytes32[4] memory) { return elgamalPubKey; }
     function getSigN() public view returns(bytes32[4] memory) { return sigN; }
     function getSigPhi() public view returns(bytes32[4] memory) { return sigPhi; }
+    function getTellersPubShare() public view returns(bytes32[4][] memory) { return tellersPubShare; }
+    function getTellersSecret() public view returns(bytes32[4][] memory) { return tellersSecret; }
 
     /* Ballot */
     struct Ballot {

@@ -1,41 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Header, Icon, Divider, Loader, Card, Image, Button, Popup } from 'semantic-ui-react';
+import { BACKEND_URL } from '../../const_val';
 import electionIcon from './election.png'
 
-const [FAILED, SUCCESS, LOADING] = [0, 1, 2];
+const [ERROR, SUCCESS, LOADING] = [0, 1, 2];
 
 class Elections extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      status: LOADING,
-      progress: ""
+      status: LOADING
     }
     this.elections = [];
-    this.records = [];
     this.getElections();
   }
 
-  setStatus(_status) {
-    if(this.state.status !== _status) {
-      this.setState(state => {
-        state.status = _status;
-        return state;
-      });
-    }
-  }
-
   async getElections() {
-    const updateProgress = text => this.setState({progress: text});
-    //this.elections = await getAllElections(updateProgress);
-    this.elections = false;
-    if(this.elections === false) {
-      this.setStatus(FAILED);
-    }
-    else{
-      this.setStatus(SUCCESS);
-    }
+    await fetch(BACKEND_URL+"/elections")
+    .then(res => {
+      if(res.status !== 200) {
+        this.setState({status: ERROR});
+      }
+      else{
+        return res.json();
+      }
+    })
+    .then(data => {
+      this.elections = data;
+      this.setState({status: SUCCESS});
+    })
+    .catch(err => {
+      this.setState({status: ERROR});
+      console.error(err);
+    });
   }
 
   maxStr(_str, size) {
@@ -55,9 +53,9 @@ class Elections extends React.Component {
         {
           this.state.status === LOADING
           ?
-            <Loader active content={this.state.progress} />
+            <Loader active />
           :
-            this.state.status === FAILED
+            this.state.status === ERROR
             ?
               <Header icon>
                 <Icon name="bug" />
@@ -67,17 +65,14 @@ class Elections extends React.Component {
             :
               <Card.Group centered>
                 {this.elections.map((election, idx) => {
-                  const [dBeg, dEnd] = [election.begin, election.end].map(time => new Date(parseInt(time)*1000));
-                  const [sBeg, sEnd] = [dBeg, dEnd].map(_date => `${_date.getFullYear()}/${_date.getMonth()+1}/${_date.getDate()} ${_date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: "h24" }).substring(0, 5)}`);
                   return (
                     <Card
                       link
                       as={ Link }
-                      to={`/election?id=${idx}`}
+                      to={`/election?address=${election.address}`}
                       header={election.title}
-                      description={this.maxStr(election.description, 50)}
-                      meta={sBeg + " ~ " + sEnd}
-                      key={idx}
+                      meta={this.maxStr(election.description, 50)}
+                      key={election.address}
                       style={{textDecoration: 'none'}}
                     />
                   )

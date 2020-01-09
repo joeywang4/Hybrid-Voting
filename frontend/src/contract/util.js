@@ -1,4 +1,5 @@
 function base64ToHex(base64) {
+  console.log("[base64ToHex]", base64);
   return window.atob(base64)
     .split('')
     .map(function (aChar) {
@@ -18,4 +19,21 @@ function base64ToBytes32(data, _length=0) {
   return ret;
 }
 
-export { base64ToHex, base64ToBytes32 }
+function hexToBase64(_str) {
+  if(_str.substring(0, 2) === "0x") _str = _str.substring(2);
+  return btoa(String.fromCharCode.apply(null,
+    _str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
+    );
+}
+
+function bytes32ToHex(_data, with0x=true) {
+  let output = "";
+  for(let i = 0;i < 4;i++) {
+    if(_data[i].substring(0,2) === "0x") output += _data[i].substring(2);
+    else output += _data[i];
+  }
+  return with0x?"0x"+output:output;
+}
+
+
+export { base64ToHex, base64ToBytes32, hexToBase64, bytes32ToHex }

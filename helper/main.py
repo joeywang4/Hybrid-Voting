@@ -65,4 +65,36 @@ def genElectionSignature():
   print("[*] Election Signature", hex(sig))
   return int_to_str(sig)
 
+@app.route('/numberSignature', methods=['POST'])
+def genNumberSignature():
+  try:
+    number = request.json['number']
+    if number.isnumeric():
+      number = int(number)
+    else:
+      number = str_to_int(number)
+    sk = request.json['sigPrivKey']
+    sk_p, sk_q = [str_to_int(x) for x in sk.split(";")]
+    data = number.to_bytes(128, 'big', signed=False)
+    digest = keccak.new(data=data, digest_bits=256).digest()
+    digest = int.from_bytes(digest, 'big', signed=False)
+    sig = RSA_siganture(sk_p, sk_q, digest)
+    return int_to_str(sig)
+  except:
+    return "Error"
+
+@app.route('/elGamalExp', methods=['POST'])
+def exp():
+  base = 0x86903f29644f242c0963c68203b0b2aee30f03f91d0782729783075abfca89a007c6ac738ccfb57a76221f2d6a5f00b6249aab653ec07d15ace1cffefeeeff9182b1683ed0173e6938435d1ce601bc3734f24c77c7b6b881d0e835c27723ba316e7a5b5915bd1a3d2dfd136c5c89663262bdc5ad4dfff4186818268c00858ec4
+  module = 0x922d4cf5211046382947a6b76da9def5ddd8718e6f5b84bd664a77c0d94d038cfa9b8604690073cca075dad2ce7a6a0f72a3e1c47fb00238b279cf7e908574c549d664940253b78a1aa901720d3fa053ddfbcdcd0905a8a90c6eb608392d391c5b1027ad538528c2a7b90f972f5d192aaa8260607065118388e630b7dab03753
+  try:
+    power = request.json['power']
+    if power.isnumeric():
+      power = int(power)
+    else:
+      power = str_to_int(power)
+    return int_to_str(pow(base, power, module))
+  except:
+    return "Error"
+
 app.run(host="localhost", port=8000)

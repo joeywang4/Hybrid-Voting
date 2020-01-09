@@ -40,6 +40,18 @@ router.get('/users', (req, res) => {
   })
 });
 
+router.post('/searchUser', (req, res) => {
+  const pubKey = req.body.sigPubKey;
+  if(!pubKey) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  User.findOne({sigPubKey: pubKey}, (err, user) => {
+    if(user) res.status(200).send(user.toObject());
+    else res.status(400).send();
+  })
+})
+
 /* Handle Elections */
 router.post('/election', async (req, res) => {
   /*
@@ -108,17 +120,23 @@ router.post('/election', async (req, res) => {
 router.get('/election', (req, res) => {
   let d = new Date();
   let qry = "";
-  if(req.query.id) {
-    qry = req.query.id;
+  if(req.query.address) {
+    qry = req.query.address;
   }
   else {
-    res.status(400).send("Missing query string: id=[electionId]");
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Election query failed: No query id`);
+    res.status(400).send("Missing query string: address=[electionAddress]");
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Election query failed: No query address`);
     return;
   }
 
   if(qry !== "") {
-    Election.findById(qry, '_id title description choices voters address ballots', (err, _election) => {
+    Election.findOne({address: qry}, '_id title description choices voters address ballots')
+    .populate({
+      path: 'voters',
+      // Get friends of friends - populate the 'friends' array for every friend
+      populate: { path: 'voters' }
+    })
+    .exec((err, _election) => {
       if(err) return errHandler(err, res);
       else if(!_election) res.status(404).send(null);
       else res.status(200).send(_election.toObject());
