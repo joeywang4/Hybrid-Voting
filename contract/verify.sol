@@ -15,7 +15,7 @@ contract Verify {
         bytes32[4] memory _y, 
         bytes32[4] memory _g, 
         bytes32[4] memory _p, 
-        bytes32[4] memory _m, 
+        bytes32[8] memory _m, 
         bytes32[4] memory _s, 
         bytes32 _e
     ) public returns(bool){
@@ -42,7 +42,7 @@ contract Verify {
         bytes32[4] memory _g1, 
         bytes32[4] memory _g2, 
         bytes32[4] memory _p, 
-        bytes32[4] memory _m, 
+        bytes32[8] memory _m, 
         bytes32[4] memory _s1, 
         bytes32[4] memory _s2, 
         bytes32 _e

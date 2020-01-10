@@ -5,7 +5,7 @@ contract VerifyInterface {
         bytes32[4] memory _y,
         bytes32[4] memory _g,
         bytes32[4] memory _p,
-        bytes32[4] memory _m,
+        bytes32[8] memory _m,
         bytes32[4] memory _s,
         bytes32 _e
     ) public returns(bool);
@@ -14,7 +14,7 @@ contract VerifyInterface {
         bytes32[4] memory _g1,
         bytes32[4] memory _g2,
         bytes32[4] memory _p,
-        bytes32[4] memory _m,
+        bytes32[8] memory _m,
         bytes32[4] memory _s1,
         bytes32[4] memory _s2,
         bytes32 _e
@@ -38,7 +38,7 @@ contract VerifyInterface {
 
 contract Election {
     /* Interface */
-    address VerifyAddress = 0x5e31F63316739F1b2f5330902CD2f608dbf3A4b7;
+    address VerifyAddress = 0xf9B1E4298d4cFa18Dce559A3033eDb8Dd9A7b421;
     VerifyInterface VerifyContract = VerifyInterface(VerifyAddress);
 
     /* Events */
@@ -48,7 +48,7 @@ contract Election {
     /* Constants */
     uint16 constant sigPubLength = 128;
     uint8 constant choiceLength = 32;
-    uint16 constant messageLength = 128;
+    uint16 constant messageLength = 256; // 2048 bits elgamal c1,c2
     uint16 constant pubKeyAccumLength = 128;
     uint16 constant linkableTagLength = 128;
     uint16 constant signatureLength = 4160;
@@ -152,7 +152,7 @@ contract Election {
 
     /* Ballot */
     struct Ballot {
-        bytes32[messageLength/32] message;
+        bytes32[messageLength/32] message; // elgamal (c1,c2)
         bytes32[pubKeyAccumLength/32] pubKeyAccum;
         bytes32[linkableTagLength/32] linkableTag;
         bytes32[signatureLength/32] signature;
@@ -224,7 +224,7 @@ contract Election {
             else g = [signature[index[i][1]],signature[index[i][1]+1],signature[index[i][1]+2],signature[index[i][1]+3]];
         }
         bytes32[4] memory h = [signature[index[i][2]],signature[index[i][2]+1],signature[index[i][2]+2],signature[index[i][2]+3]];
-        bytes32[4] memory m = ballots[_voterId].message;
+        bytes32[8] memory m = ballots[_voterId].message;
         bytes32[4] memory s1 = [signature[index[i][3]],signature[index[i][3]+1],signature[index[i][3]+2],signature[index[i][3]+3]];
         bytes32[4] memory s2 = [signature[index[i][4]],signature[index[i][4]+1],signature[index[i][4]+2],signature[index[i][4]+3]];
         bytes32 e = signature[index[i][5]];
