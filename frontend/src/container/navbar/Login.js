@@ -56,7 +56,8 @@ class LoginForm extends React.Component {
               });
             }), 1000);
             this.setState(state => {
-              state.msg = `Welcome back, ${data.name}! Redirect to homepage in 1 second.`
+              state.err = "";
+              state.msg = `Welcome back, ${data.name}! Redirect to homepage in 1 second.`;
               return state;
             })
           })

@@ -8,62 +8,11 @@ web3.eth.net.getNetworkType()
 
 const abi = [
 	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "tellers",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getLinkBase",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "begin",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint64"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"constant": false,
 		"inputs": [
 			{
 				"name": "_message",
-				"type": "bytes32[4]"
+				"type": "bytes32[8]"
 			},
 			{
 				"name": "_pubKeyAccum",
@@ -85,190 +34,6 @@ const abi = [
 		"type": "function"
 	},
 	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_idx",
-				"type": "uint32"
-			}
-		],
-		"name": "getPubKeyAccum",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_linkableTag",
-				"type": "bytes32[4]"
-			}
-		],
-		"name": "verifyLinkableTag",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getAccumVoters",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getTellers",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4][]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getSigN",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "sigPhi",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "sigN",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getTellersSecret",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4][]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "linkBase",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getAdmin",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_idx",
-				"type": "uint32"
-			}
-		],
-		"name": "getVaidator",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool[10]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"constant": false,
 		"inputs": [
 			{
@@ -285,240 +50,6 @@ const abi = [
 			}
 		],
 		"name": "sendElgamalPubShare",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_idx",
-				"type": "uint32"
-			}
-		],
-		"name": "getMessage",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "elgamalPubKey",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "tellersSecret",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "tellersPubShare",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "accumVoters",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_idx",
-				"type": "uint32"
-			}
-		],
-		"name": "getSignature",
-		"outputs": [
-			{
-				"name": "_signature",
-				"type": "bytes32[130]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getElgamalPubKey",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_voterId",
-				"type": "uint32"
-			},
-			{
-				"name": "i",
-				"type": "uint32"
-			}
-		],
-		"name": "VerifySignature",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getBallotsCount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "accumBase",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "admin",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getAccumBase",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_voterId",
-				"type": "uint32"
-			}
-		],
-		"name": "VerifyAll",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -547,64 +78,35 @@ const abi = [
 		"type": "function"
 	},
 	{
-		"constant": true,
+		"constant": false,
 		"inputs": [
 			{
-				"name": "_idx",
+				"name": "_voterId",
 				"type": "uint32"
 			}
 		],
-		"name": "getLinkableTag",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4]"
-			}
-		],
+		"name": "VerifyAll",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "getSigPhi",
-		"outputs": [
+		"constant": false,
+		"inputs": [
 			{
-				"name": "",
-				"type": "bytes32[4]"
+				"name": "_voterId",
+				"type": "uint32"
+			},
+			{
+				"name": "i",
+				"type": "uint32"
 			}
 		],
+		"name": "VerifySignature",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getTellersPubShare",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bytes32[4][]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "end",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint64"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -669,8 +171,508 @@ const abi = [
 		],
 		"name": "NewBallot",
 		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "accumBase",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "accumVoters",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "admin",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "begin",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint64"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "elgamalPubKey",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "end",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint64"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getAccumBase",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getAccumVoters",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getAdmin",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getBallotsCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getElgamalPubKey",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint32"
+			}
+		],
+		"name": "getLinkableTag",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getLinkBase",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint32"
+			}
+		],
+		"name": "getMessage",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[8]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint32"
+			}
+		],
+		"name": "getPubKeyAccum",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getSigN",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint32"
+			}
+		],
+		"name": "getSignature",
+		"outputs": [
+			{
+				"name": "_signature",
+				"type": "bytes32[130]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getSigPhi",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTellers",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4][]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTellersPubShare",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4][]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTellersSecret",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32[4][]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint32"
+			}
+		],
+		"name": "getValidator",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool[10]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "linkBase",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "sigN",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "sigPhi",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tellers",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tellersPubShare",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tellersSecret",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_linkableTag",
+				"type": "bytes32[4]"
+			}
+		],
+		"name": "verifyLinkableTag",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]
+
+/* Modifiers */
 
 const sendElgamalPubShare = async (_tellerId, _h, _signature, address,  onHash, onConfirmed) => {
   const Contract = new web3.eth.Contract(abi, address);
@@ -715,6 +717,26 @@ const sendElgamalSecret = async (_tellerId, _secret, _signature, address,  onHas
     }
   });
 }
+
+const castBallot = async (_message, _pubKeyAccum, _linkableTag, _signature, address, onHash, onConfirmed) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  await window.ethereum.enable();
+  const accounts = await web3.eth.getAccounts();
+  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
+  const Account = accounts[0];
+
+  let flag = false;
+  Contract.methods.castBallot(_message, _pubKeyAccum, _linkableTag, _signature).send({from: Account})
+  .on('transactionHash', onHash)
+  .on('confirmation', (confirmationNumber, receipt) => {
+    if(!flag) {
+      flag = true;
+      onConfirmed(confirmationNumber, receipt);
+    }
+  });
+}
+
+/* Getters */
 
 const getBegin = async address => {
   const Contract = new web3.eth.Contract(abi, address);
@@ -796,6 +818,42 @@ const getTellersSecret = async address => {
   .then(data => data);
 }
 
+const getBallotsCount = async address => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getBallotsCount().call()
+  .then(data => data);
+}
+
+const getMessage = async (_idx, address) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getMessage().call()
+  .then(data => data);
+}
+
+const getPubKeyAccum = async (_idx, address) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getPubKeyAccum().call()
+  .then(data => data);
+}
+
+const getLinkableTag = async (_idx, address) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getLinkableTag().call()
+  .then(data => data);
+}
+
+const getSignature = async (_idx, address) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getSignature().call()
+  .then(data => data);
+}
+
+const getValidator = async (_idx, address) => {
+  const Contract = new web3.eth.Contract(abi, address);
+  return await Contract.methods.getValidator().call()
+  .then(data => data);
+}
+
 const getElectionInfo = async address => {
   const [
     begin,
@@ -843,6 +901,7 @@ const getElectionInfo = async address => {
 export {
   sendElgamalPubShare,
   sendElgamalSecret,
+  castBallot,
   getBegin,
   getEnd,
   getTellers,
@@ -855,5 +914,11 @@ export {
   getSigPhi,
   getTellersPubShare,
   getTellersSecret,
+  getBallotsCount,
+  getMessage,
+  getPubKeyAccum,
+  getLinkableTag,
+  getSignature,
+  getValidator,
   getElectionInfo,
 };

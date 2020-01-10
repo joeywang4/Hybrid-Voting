@@ -3,14 +3,17 @@ from flask import request
 from flask_cors import CORS
 import json
 from Crypto.Hash import keccak
-from signature import gen_sig_keypair, gen_sig_param, gen_accum_voters
+from signature import gen_sig_keypair, gen_sig_param, gen_accum_voters, sign_ballot
 from RSAsignatue import RSA_siganture
+from elgamal import encrypt
 from util import int_to_str, str_to_int, randrange
 
 app = flask.Flask(__name__)
 CORS(app)
 app.config["DEBUG"] = True
 
+base = 0x86903f29644f242c0963c68203b0b2aee30f03f91d0782729783075abfca89a007c6ac738ccfb57a76221f2d6a5f00b6249aab653ec07d15ace1cffefeeeff9182b1683ed0173e6938435d1ce601bc3734f24c77c7b6b881d0e835c27723ba316e7a5b5915bd1a3d2dfd136c5c89663262bdc5ad4dfff4186818268c00858ec4
+module = 0x922d4cf5211046382947a6b76da9def5ddd8718e6f5b84bd664a77c0d94d038cfa9b8604690073cca075dad2ce7a6a0f72a3e1c47fb00238b279cf7e908574c549d664940253b78a1aa901720d3fa053ddfbcdcd0905a8a90c6eb608392d391c5b1027ad538528c2a7b90f972f5d192aaa8260607065118388e630b7dab03753
 
 @app.route('/', methods=['GET'])
 def home():
@@ -85,8 +88,6 @@ def genNumberSignature():
 
 @app.route('/elGamalExp', methods=['POST'])
 def exp():
-  base = 0x86903f29644f242c0963c68203b0b2aee30f03f91d0782729783075abfca89a007c6ac738ccfb57a76221f2d6a5f00b6249aab653ec07d15ace1cffefeeeff9182b1683ed0173e6938435d1ce601bc3734f24c77c7b6b881d0e835c27723ba316e7a5b5915bd1a3d2dfd136c5c89663262bdc5ad4dfff4186818268c00858ec4
-  module = 0x922d4cf5211046382947a6b76da9def5ddd8718e6f5b84bd664a77c0d94d038cfa9b8604690073cca075dad2ce7a6a0f72a3e1c47fb00238b279cf7e908574c549d664940253b78a1aa901720d3fa053ddfbcdcd0905a8a90c6eb608392d391c5b1027ad538528c2a7b90f972f5d192aaa8260607065118388e630b7dab03753
   try:
     power = request.json['power']
     if power.isnumeric():
@@ -96,5 +97,26 @@ def exp():
     return int_to_str(pow(base, power, module))
   except:
     return "Error"
+
+@app.route('/createBallot', methods=['POST'])
+def createBallot():
+  #try:
+    print(request.json)
+    list_of_pks = request.json['voters']
+    list_of_pks = [str_to_int(x) for x in list_of_pks]
+    sk_p, sk_q = request.json['sigPrivKey'].split(";")
+    sk_p, sk_q = str_to_int(sk_p), str_to_int(sk_q)
+    pk = str_to_int(request.json['sigPubKey'])
+    k = str_to_int(request.json['eKey'])
+    h = pow(base, k, module)
+    c1, c2 = encrypt(h, int(request.json['choice']))
+    accumBase = str_to_int(request.json['accumBase'])
+    linkBase = str_to_int(request.json['linkBase'])
+
+    sig = sign_ballot(list_of_pks, (sk_p, sk_q, pk), (c1, c2), (accumBase, linkBase))
+    sig = [int_to_str(x) for x in sig]
+    return json.dumps({"signature": sig})
+  #except:
+  #  return "Error"
 
 app.run(host="localhost", port=8000)

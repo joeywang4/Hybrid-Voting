@@ -71,11 +71,11 @@ def gen_accum_voters(accumBase, voters):
   return v
 
 # Sign a message
-# Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int tuple (c1, c2)), parameters(u, g_theta, N_sig, phiN_sig, p_sig, q_sig)
+# Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int tuple (c1, c2)), parameters(u, g_theta)
 # Output: Signature(str)
 def sign_ballot(list_of_pks, key_pair, m, param):
   sk_p, sk_q, pk = key_pair
-  u, g_theta, N_sig, phiN_sig, p_sig, q_sig = param
+  u, g_theta = param
 
   g = get_generator(p_sig, q_sig) # some generator for signature
   h = get_generator(p_sig, q_sig) # some generator for signature

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Header, Icon, Divider, Form, Grid, Message, Button, Portal, Segment, Table, Popup, Container } from 'semantic-ui-react';
 import { sendElgamalPubShare, sendElgamalSecret } from '../../contract/election';
-import { base64ToBytes32 } from '../../contract/util';
+import { base64ToBytes32, hexToBase64 } from '../../contract/util';
 import { CLIENT_URL, NO_CLIENT_URL } from "../../const_val";
 
-const [ERROR, LOADING, IDLE] = [0, 1, 2];
+const [LOADING, IDLE] = [0, 1];
 
 class KeySharing extends React.Component {
   constructor(props) {
@@ -111,7 +111,7 @@ class KeySharing extends React.Component {
       state.formStatus = IDLE;
       state.msg = (
         <Message positive icon>
-          <Icon name='check' loading />
+          <Icon name='check' />
           <Message.Content>
             <Message.Header>Transaction Success!</Message.Header>
             Refreash this page to check the result
@@ -126,13 +126,17 @@ class KeySharing extends React.Component {
     if(this.state.publicShare === "" || this.state.privateKey === "") return false;
     this.setState({formStatus: LOADING});
     const signature = await this.signNumber(this.state.publicShare);
-    sendElgamalPubShare(this.tellerId, base64ToBytes32(this.state.publicShare), base64ToBytes32(signature), this.props.address, this.onHash, this.onConfirmed);
+    sendElgamalPubShare(this.tellerId, base64ToBytes32(this.state.publicShare, 128), base64ToBytes32(signature, 128), this.props.address, this.onHash, this.onConfirmed);
   }
 
   sendSecret = async _ => {
     this.setState({formStatus: LOADING});
-    const signature = await this.signNumber(this.state.secret);
-    sendElgamalSecret(this.tellerId, base64ToBytes32(this.state.secret), base64ToBytes32(signature), this.props.address, this.onHash, this.onConfirmed);
+    let secret = "";
+    if(!isNaN(this.state.secret)) {
+      secret = hexToBase64(parseInt(this.state.secret).toString(16));
+    } else secret = this.state.secret;
+    const signature = await this.signNumber(secret);
+    sendElgamalSecret(this.tellerId, base64ToBytes32(secret, 128), base64ToBytes32(signature, 128), this.props.address, this.onHash, this.onConfirmed);
   }
 
   signNumber = async number => {

@@ -291,15 +291,15 @@ class CreateElection extends React.Component {
     }
     for(let [user, selected] of Object.entries(this.state.tellers)) {
       if(selected) {
-        const _teller = base64ToBytes32(this.emailToPub[user]);
+        const _teller = base64ToBytes32(this.emailToPub[user], 128);
         for(let i = 0;i < _teller.length;i++) tellers.push(_teller[i]);
       }
     }
-    const accumBase = base64ToBytes32(this.state.accumBase);
-    const linkBase = base64ToBytes32(this.state.linkBase);
-    const accumVoters = base64ToBytes32(await this.getAccumVoters(this.state.accumBase, votersPubKey));
-    const admin = base64ToBytes32(localStorage['sigPubKey']);
-    const signature = base64ToBytes32(await this.genSignature(begin, end, tellers, admin, accumBase, linkBase, accumVoters));
+    const accumBase = base64ToBytes32(this.state.accumBase, 128);
+    const linkBase = base64ToBytes32(this.state.linkBase, 128);
+    const accumVoters = base64ToBytes32(await this.getAccumVoters(this.state.accumBase, votersPubKey), 128);
+    const admin = base64ToBytes32(localStorage['sigPubKey'], 128);
+    const signature = base64ToBytes32(await this.genSignature(begin, end, tellers, admin, accumBase, linkBase, accumVoters), 128);
     console.log(signature);
 
     const onHash = hash => {

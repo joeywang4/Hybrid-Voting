@@ -180,7 +180,7 @@ contract Election {
     function getPubKeyAccum(uint32 _idx) public view returns(bytes32[pubKeyAccumLength/32] memory) { return ballots[_idx].pubKeyAccum; }
     function getLinkableTag(uint32 _idx) public view returns(bytes32[linkableTagLength/32] memory) { return ballots[_idx].linkableTag; }
     function getSignature(uint32 _idx) public view returns(bytes32[signatureLength/32] memory _signature) { return ballots[_idx].signature; }
-    function getVaidator(uint32 _idx) public view returns(bool[validatorLength] memory) { return ballots[_idx].validator; }
+    function getValidator(uint32 _idx) public view returns(bool[validatorLength] memory) { return ballots[_idx].validator; }
 
     function verifyLinkableTag(bytes32[linkableTagLength/32] memory _linkableTag) public view returns(bool) {
         for (uint32 i = 0; i<ballots.length; ++i) {

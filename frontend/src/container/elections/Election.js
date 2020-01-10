@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Header, Icon, Loader, Portal, Button, Segment, Card } from 'semantic-ui-react';
 import KeySharing from './KeySharing';
+import Ballot from './Ballot';
 import { getElectionInfo } from '../../contract/election';
 import { hexToBase64, bytes32ToHex } from '../../contract/util';
 import {BACKEND_URL} from '../../const_val';
@@ -88,8 +89,8 @@ class Election extends React.Component {
     ] = [
       election.begin,
       election.end,
-      election.accumBase,
-      election.linkBase,
+      bytes32ToHex(election.accumBase),
+      bytes32ToHex(election.linkBase),
       election.accumVoters,
       election.elgamalPubKey,
       election.sigN,
@@ -136,7 +137,7 @@ class Election extends React.Component {
                     {this.title}
                   </Header>
                   <Container textAlign='center' style={{minHeight: "16vh", marginTop: "2vh"}}>
-                    <pre style={{fontSize: "1.5em"}}>{this.description}</pre>
+                    <p style={{fontSize: "1.5em", whiteSpace: "pre-wrap"}}>{this.description}</p>
                   </Container>
                   {/* Time Range */}
                   <p>
@@ -238,6 +239,16 @@ class Election extends React.Component {
                     hasClient={this.props.hasClient}
                   />
                   {/* Cast Ballot */}
+                  <Ballot
+                    began={now >= begin}
+                    ended={now > end}
+                    voters={this.voters}
+                    choices={this.choices}
+                    accumBase={this.accumBase}
+                    linkBase={this.linkBase}
+                    address={this.props.address}
+                    hasClient={this.props.hasClient}
+                  />
                   {/* View Ballots */}
                 </React.Fragment>
           }

@@ -46,7 +46,8 @@ if __name__ == "__main__":
 
   N = (pk1 - 1) // 2
   m = randrange(2, N)
-  sig = RSA_siganture(sk1_p, sk1_q, m)
+  sig = 0
+  # sig = RSA_siganture(sk1_p, sk1_q, m)
 
   # print(pow(sig,65537,sk1_p*sk1_q) == m)
   # print(pow(sig,65537,N) == m)

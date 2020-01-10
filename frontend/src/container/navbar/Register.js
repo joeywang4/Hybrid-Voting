@@ -171,7 +171,7 @@ class RegisterForm extends React.Component {
               <Form.Input type="textarea" required={true} control={TextArea} id="sigPrivKey" placeholder="Base64 encoded private key" value={this.state.sigPrivKey} onChange={e => { this.sigPrivKey = e.target.value; this.updateKey(); }} />
             </Form.Field>
             <Form.Group widths="equal">
-              <Form.Button loading={this.state.genState === BUSY} onClick={this.genKey}>Generate Key</Form.Button>
+              <Form.Button type="button" loading={this.state.genState === BUSY} onClick={this.genKey}>Generate Key</Form.Button>
               <Form.Button
                 content="Upload Key"
                 loading={this.state.uploadBusy}
