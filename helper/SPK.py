@@ -7,14 +7,14 @@ def DiscreteLogSign(y, g, x, p, q, m):
   '''
   k = randrange(2, q)
   r = pow(g, k, p)
-  e = Hash(r, m)
+  e = Hash(r, m[0], m[1])
   s = (k-x*e)%q
   assert(DiscreteLogVerify(y,g,p,m,s,e))
   return (s, e)
 
 def DiscreteLogVerify(y, g, p, m, s, e):
   r_v = (pow(g, s, p)*pow(y, e, p))%p
-  e_v = Hash(r_v, m)
+  e_v = Hash(r_v, m[0], m[1])
   return e_v == e
 
 def DoubleDiscreteLogSign(y, g1, g2, x1, x2, p, q, m):
@@ -24,7 +24,7 @@ def DoubleDiscreteLogSign(y, g1, g2, x1, x2, p, q, m):
   k1 = randrange(2, q)
   k2 = randrange(2, q)
   r = (pow(g1, k1, p)*pow(g2, k2, p))%p
-  e = Hash(r, m)
+  e = Hash(r, m[0], m[1])
   s1 = (k1-x1*e)%q
   s2 = (k2-x2*e)%q
   assert(DoubleDiscreteLogVerify(y,g1,g2,p,m,s1,s2,e))
@@ -32,7 +32,7 @@ def DoubleDiscreteLogSign(y, g1, g2, x1, x2, p, q, m):
 
 def DoubleDiscreteLogVerify(y, g1, g2, p, m, s1, s2, e):
   r_v = (pow(g1, s1, p)*pow(g2, s2, p)*pow(y, e, p))%p
-  e_v = Hash(r_v, m)
+  e_v = Hash(r_v, m[0], m[1])
   return e_v == e
 
 def InRangeSign(y, g, x, p, q, b, m):
@@ -46,7 +46,7 @@ def InRangeSign(y, g, x, p, q, b, m):
     # k in range 2^(b+255)~2^(b+256)
     k = randrange(2**(b+t-2), 2**(b+t-1))
     r = pow(g, k, p)
-    e = Hash(r, m) 
+    e = Hash(r, m[0], m[1]) 
     # Check x*e is in the range 2^(b+t-2)~2^(b+t-1)
     # Then s will be in range 2^(b+t-1)~2^(b+t)
     if (x*e).bit_length() == b+t-1:
@@ -59,7 +59,7 @@ def InRangeVerify(y, g, p, q, b, m, s, e):
   if s.bit_length() != b+t:
     return False
   r_v = (pow(g, s, p)*number.inverse(pow(y, e, p), p))%p
-  e_v = Hash(r_v, m)
+  e_v = Hash(r_v, m[0], m[1])
   return e_v == e
 
 if __name__ == "__main__":

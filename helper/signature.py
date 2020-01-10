@@ -71,7 +71,7 @@ def gen_accum_voters(accumBase, voters):
   return v
 
 # Sign a message
-# Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int), parameters(u, g_theta, N_sig, phiN_sig, p_sig, q_sig)
+# Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int tuple (c1, c2)), parameters(u, g_theta, N_sig, phiN_sig, p_sig, q_sig)
 # Output: Signature(str)
 def sign_ballot(list_of_pks, key_pair, m, param):
   sk_p, sk_q, pk = key_pair
@@ -166,10 +166,11 @@ if __name__ == "__main__":
 
   list_of_pks = [pk2, pk3, pk4, pk5]
   key_pair = (sk1_p, sk1_q, pk1)
-  m = 1234567894565231545315
+  m = 1234567894565231545315, 54562232155885231212
   v, y_hat, T1, T2, T3, T4, T5, T6, T7, T8, T9, g, h, s, t, y, s1, e1, s2_1, s2_2, e2, s3_1, s3_2, e3, s4_1, s4_2, e4, s5_1, s5_2, e5, s6, e6, s7, e7, s8_1, s8_2, e8, s9_1, s9_2, e9, sL, eL = sign_ballot(list_of_pks, key_pair, m, param)
   
-  print("m" , intToBytesArray(m, 128))
+  print("m" , intToBytesArray(m[0], 128))
+  print("m" , intToBytesArray(m[1], 128))
   print("v" , intToBytesArray(v, 128))
   print("y_hat" , intToBytesArray(y_hat, 128))
   print("T1" , intToBytesArray(T1, 128))
