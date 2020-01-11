@@ -300,7 +300,6 @@ class CreateElection extends React.Component {
     const accumVoters = base64ToBytes32(await this.getAccumVoters(this.state.accumBase, votersPubKey), 128);
     const admin = base64ToBytes32(localStorage['sigPubKey'], 128);
     const signature = base64ToBytes32(await this.genSignature(begin, end, tellers, admin, accumBase, linkBase, accumVoters), 128);
-    console.log(signature);
 
     const onHash = hash => {
       const link = "https://ropsten.etherscan.io/tx/"+hash;

@@ -1,10 +1,6 @@
-import Web3 from 'web3'
-let web3 = new Web3(window.ethereum);
-
-web3.eth.net.getNetworkType()
-.then(name => {
-  if(name !== "ropsten") console.error("Please switch to ropsten testnet!");
-});
+require('dotenv').config();
+let Web3 = require("web3");
+let web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC_ADDR));
 
 const abi = [
 	{
@@ -672,103 +668,6 @@ const abi = [
 	}
 ]
 
-/* Modifiers */
-
-const sendElgamalPubShare = async (_tellerId, _h, _signature, address,  onHash, onConfirmed) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  await window.ethereum.enable();
-  const accounts = await web3.eth.getAccounts();
-  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
-  const Account = accounts[0];
-
-  let flag = false;
-  Contract.methods.sendElgamalPubShare(
-    _tellerId,
-    _h,
-    _signature
-  ).send({from: Account})
-  .on('transactionHash', onHash)
-  .on('confirmation', (confirmationNumber, receipt) => {
-    if(!flag) {
-      flag = true;
-      onConfirmed(confirmationNumber, receipt);
-    }
-  });
-}
-
-const sendElgamalSecret = async (_tellerId, _secret, _signature, address,  onHash, onConfirmed) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  await window.ethereum.enable();
-  const accounts = await web3.eth.getAccounts();
-  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
-  const Account = accounts[0];
-
-  let flag = false;
-  Contract.methods.sendElgamalSecret(
-    _tellerId,
-    _secret,
-    _signature
-  ).send({from: Account})
-  .on('transactionHash', onHash)
-  .on('confirmation', (confirmationNumber, receipt) => {
-    if(!flag) {
-      flag = true;
-      onConfirmed(confirmationNumber, receipt);
-    }
-  });
-}
-
-const castBallot = async (_message, _pubKeyAccum, _linkableTag, _signature, address, onHash, onConfirmed) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  await window.ethereum.enable();
-  const accounts = await web3.eth.getAccounts();
-  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
-  const Account = accounts[0];
-  let flag = false;
-  Contract.methods.castBallot(_message, _pubKeyAccum, _linkableTag, _signature).send({from: Account})
-  .on('transactionHash', onHash)
-  .on('confirmation', (confirmationNumber, receipt) => {
-    if(!flag) {
-      flag = true;
-      onConfirmed(confirmationNumber, receipt);
-    }
-  });
-}
-
-const VerifySignature = async (_ballotId, _stage, address, onHash, onConfirmed) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  await window.ethereum.enable();
-  const accounts = await web3.eth.getAccounts();
-  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
-  const Account = accounts[0];
-  let flag = false;
-  Contract.methods.VerifySignature(_ballotId, _stage).send({from: Account})
-  .on('transactionHash', onHash)
-  .on('confirmation', (confirmationNumber, receipt) => {
-    if(!flag) {
-      flag = true;
-      onConfirmed(confirmationNumber, receipt);
-    }
-  });
-}
-
-const VerifyAll = async (_ballotId, address, onHash, onConfirmed) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  await window.ethereum.enable();
-  const accounts = await web3.eth.getAccounts();
-  if(!Array.isArray(accounts) || accounts.length < 1) throw new Error("Get account error!");
-  const Account = accounts[0];
-  let flag = false;
-  Contract.methods.VerifyAll(_ballotId).send({from: Account})
-  .on('transactionHash', onHash)
-  .on('confirmation', (confirmationNumber, receipt) => {
-    if(!flag) {
-      flag = true;
-      onConfirmed(confirmationNumber, receipt);
-    }
-  });
-}
-
 /* Getters */
 
 const getBegin = async address => {
@@ -865,25 +764,25 @@ const getMessage = async (_idx, address) => {
 
 const getPubKeyAccum = async (_idx, address) => {
   const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getPubKeyAccum(_idx).call()
+  return await Contract.methods.getPubKeyAccum().call()
   .then(data => data);
 }
 
 const getLinkableTag = async (_idx, address) => {
   const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getLinkableTag(_idx).call()
+  return await Contract.methods.getLinkableTag().call()
   .then(data => data);
 }
 
 const getSignature = async (_idx, address) => {
   const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getSignature(_idx).call()
+  return await Contract.methods.getSignature().call()
   .then(data => data);
 }
 
 const getValidator = async (_idx, address) => {
   const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getValidator(_idx).call()
+  return await Contract.methods.getValidator().call()
   .then(data => data);
 }
 
@@ -931,12 +830,8 @@ const getElectionInfo = async address => {
   }
 }
 
-export {
-  sendElgamalPubShare,
-  sendElgamalSecret,
-  castBallot,
-  VerifySignature,
-  VerifyAll,
+module.exports = {
+  web3,
   getBegin,
   getEnd,
   getTellers,

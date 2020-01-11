@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/user');
 const Election = require('../models/election');
 const Ballot = require('../models/ballot');
+const { getMessage } = require("../contract/Election");
 
 /* Handle Users */
 router.get('/user', (req, res) => {
@@ -133,8 +134,11 @@ router.get('/election', (req, res) => {
     Election.findOne({address: qry}, '_id title description choices voters address ballots')
     .populate({
       path: 'voters',
-      // Get friends of friends - populate the 'friends' array for every friend
       populate: { path: 'voters' }
+    })
+    .populate({
+      path: 'ballots',
+      populate: { path: 'ballots' }
     })
     .exec((err, _election) => {
       if(err) return errHandler(err, res);
@@ -196,6 +200,12 @@ router.get('/ballot', (req, res) => {
       else res.status(200).send(_ballot.toObject());
     });
   }
+})
+
+router.get('/decryptBallot', async (req, res) => {
+  const { id, address } = req.query;
+  const message = await getMessage(id, address);
+  console.log(message);
 })
 
 router.get('/redirect/:path', (req, res) => {

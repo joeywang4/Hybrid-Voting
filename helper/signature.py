@@ -65,10 +65,10 @@ def gen_sig_param():
   return u, g_theta, N_sig, phiN_sig, p_sig, q_sig
 
 def gen_accum_voters(accumBase, voters):
-  v = 1
+  power = 1
   for voter in voters:
-    v = (v * pow(accumBase, voter, N_sig)) % N_sig
-  return v
+    power *= voter
+  return pow(accumBase, power, N_sig)
 
 # Sign a message
 # Input: list_of_pks, Key pair(sk_p, sk_q, pk), Message(int tuple (c1, c2)), parameters(u, g_theta)

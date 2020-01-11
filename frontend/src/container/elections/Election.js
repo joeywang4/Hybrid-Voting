@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Container, Header, Icon, Loader, Portal, Button, Segment, Card } from 'semantic-ui-react';
 import KeySharing from './KeySharing';
 import Ballot from './Ballot';
+import Result from './Result';
 import { getElectionInfo } from '../../contract/election';
 import { hexToBase64, bytes32ToHex } from '../../contract/util';
 import {BACKEND_URL} from '../../const_val';
@@ -245,11 +246,20 @@ class Election extends React.Component {
                     voters={this.voters}
                     choices={this.choices}
                     accumBase={this.accumBase}
+                    accumVoters={this.accumVoters}
                     linkBase={this.linkBase}
                     address={this.props.address}
                     hasClient={this.props.hasClient}
                   />
                   {/* View Ballots */}
+                  <Result
+                    began={now >= begin}
+                    ended={now > end}
+                    tellersPubShare={this.tellersPubShare}
+                    tellersSecret={this.tellersSecret}
+                    address={this.props.address}
+                    hasClient={this.props.hasClient}
+                  />
                 </React.Fragment>
           }
         </div>

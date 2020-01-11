@@ -1,8 +1,8 @@
 import React from 'react';
-import { Header, Icon, Divider, Grid, Table, Form, Button } from 'semantic-ui-react';
+import { Header, Icon, Divider, Grid, Table, Form, Button, Message } from 'semantic-ui-react';
 import { castBallot } from '../../contract/election';
 import { CLIENT_URL, NO_CLIENT_URL } from '../../const_val';
-import { hexToBase64 } from '../../contract/util';
+import { hexToBase64, base64ToBytes32 } from '../../contract/util';
 
 const [ERROR, LOADING, IDLE] = [0, 1, 2];
 
@@ -10,7 +10,7 @@ class Ballot extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      status: LOADING,
+      status: IDLE,
       eKey: "",
       msg: "",
       privateKey: ""
@@ -30,11 +30,60 @@ class Ballot extends React.Component {
 
   choiceToNum = choice => (1<<choice);
 
+  onSubmit = e => {
+    e.preventDefault();
+  }
+
+  onHash = hash => {
+    const link = "https://ropsten.etherscan.io/tx/"+hash;
+    this.setState(state => {
+      console.log("Got hash", hash);
+      state.status = IDLE;
+      state.msg = (
+        <Message positive icon>
+          <Icon name='circle notched' loading />
+          <Message.Content>
+            <Message.Header>Transaction Processing</Message.Header>
+            Check your transaction <a href={link} target="_blank" rel="noopener noreferrer">here</a>
+          </Message.Content>
+        </Message>
+      )
+      return state;
+    })
+  }
+
+  onConfirmed = (confirmationNumber, receipt) => {
+    console.log("[*] Confirmed.", confirmationNumber, receipt);
+    let ballotId = -1;
+    if(receipt && receipt.events && receipt.events.NewBallot && receipt.events.NewBallot.returnValues) {
+      ballotId = parseInt(receipt.events.NewBallot.returnValues.ballotId);
+    }
+    this.setState(state => {
+      state.status = IDLE;
+      state.msg = (
+        <Message positive icon>
+          <Icon name='check' />
+          <Message.Content>
+            <Message.Header>Your ballot ID is {ballotId}</Message.Header>
+            Please remember that!
+          </Message.Content>
+        </Message>
+      );
+      return state;
+    })
+  }
+
   onVote = async num => {
     if(!localStorage['sigPubKey'] || this.state.eKey === "" || this.state.privateKey === "") return false;
+    this.setState({status: LOADING, msg: ""});
     let voters = this.props.voters.map(voter => voter.sigPubKey);
-    console.log("[Vote]", num);
-    const rawSignature = await fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/createBallot", {
+    for(let i = 0;i < voters.length;i++) {
+      if(voters[i] === localStorage['sigPubKey']) {
+        voters = voters.slice(0, i).concat(voters.slice(i+1));
+        break;
+      }
+    }
+    let [rawSignature, [c1, c2]] = await fetch((this.props.hasClient?CLIENT_URL:NO_CLIENT_URL)+"/createBallot", {
       method: 'POST',
       body: JSON.stringify({
         voters,
@@ -52,9 +101,14 @@ class Ballot extends React.Component {
     .then(res => {
       if(res.status === 200) return res.json();
     })
-    .then(data => data.signature);
-    console.log(rawSignature);
+    .then(data => [data.signature, data.message.map(data => base64ToBytes32(data))]);
+    let [pubKeyAccum, linkableTag] = rawSignature.slice(0, 2).map(data => base64ToBytes32(data));
+    rawSignature = rawSignature.slice(2);
     let signature = [];
+    for(let i = 0;i < rawSignature.length;i++) {
+      signature = signature.concat(base64ToBytes32(rawSignature[i]));
+    }
+    castBallot(c1.concat(c2), pubKeyAccum, linkableTag, signature, this.props.address, this.onHash, this.onConfirmed);
   }
 
   getRandom(callback) {
@@ -100,6 +154,13 @@ class Ballot extends React.Component {
 
   render() {
     const canVote = this.props.began === true && this.props.ended === false && this.isVoter;
+    let reason = "";
+    if(!canVote) {
+      if(this.props.began === false) reason = "This election is not started yet";
+      else if(this.props.ended === true) reason = "This election has ended";
+      else if(!this.isVoter) reason = "You are not a voter";
+      else reason = "You can not vote";
+    }
     return (
       <React.Fragment>
         <div style={{marginTop: "2vh"}} />
@@ -113,7 +174,7 @@ class Ballot extends React.Component {
         <div style={{minHeight: "10vh"}}>
           <Grid textAlign="center">
             <Grid.Column style={{maxWidth: "50vw"}}>
-              <Form loading={this.state.formStatus === LOADING} onSubmit={this.onSubmit}>
+              <Form loading={this.state.status === LOADING} onSubmit={this.onSubmit}>
                 <Table celled textAlign="center">
                   <Table.Header>
                     <Table.Row>
@@ -194,9 +255,15 @@ class Ballot extends React.Component {
                     </Form.Field>
                   </React.Fragment>
                 :
-                  <strong>You can not vote</strong>
+                  <strong>{reason}</strong>
                 }
               </Form>
+              {this.state.msg !== ""
+              ?
+                this.state.msg
+              :
+                null
+              }
             </Grid.Column>
           </Grid>
         </div>

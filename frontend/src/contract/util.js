@@ -1,5 +1,4 @@
 function base64ToHex(base64) {
-  console.log("[base64ToHex]", base64);
   return window.atob(base64)
     .split('')
     .map(function (aChar) {
@@ -32,7 +31,7 @@ function hexToBase64(_str) {
 
 function bytes32ToHex(_data, with0x=true) {
   let output = "";
-  for(let i = 0;i < 4;i++) {
+  for(let i = 0;i < _data.length;i++) {
     if(_data[i].substring(0,2) === "0x") output += _data[i].substring(2);
     else output += _data[i];
   }

@@ -29,6 +29,7 @@ def genSigParam():
 
 @app.route('/genAccumVoters', methods=['POST'])
 def genAccumVoters():
+  print(request.json['accumBase'], request.json['voters'])
   accumBase, voters = str_to_int(request.json['accumBase']), [str_to_int(voter) for voter in request.json['voters']]
   print("[*]", accumBase, voters)
   result = gen_accum_voters(accumBase, voters)
@@ -94,6 +95,7 @@ def exp():
       power = int(power)
     else:
       power = str_to_int(power)
+    print(power, hex(pow(base, power, module)))
     return int_to_str(pow(base, power, module))
   except:
     return "Error"
@@ -101,7 +103,6 @@ def exp():
 @app.route('/createBallot', methods=['POST'])
 def createBallot():
   #try:
-    print(request.json)
     list_of_pks = request.json['voters']
     list_of_pks = [str_to_int(x) for x in list_of_pks]
     sk_p, sk_q = request.json['sigPrivKey'].split(";")
@@ -115,7 +116,8 @@ def createBallot():
 
     sig = sign_ballot(list_of_pks, (sk_p, sk_q, pk), (c1, c2), (accumBase, linkBase))
     sig = [int_to_str(x) for x in sig]
-    return json.dumps({"signature": sig})
+    print(json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]}))
+    return json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]})
   #except:
   #  return "Error"
 
