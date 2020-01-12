@@ -88,7 +88,8 @@ class Ballot extends React.Component {
       body: JSON.stringify({
         voters,
         sigPrivKey: this.state.privateKey,
-        sigPubKey: localStorage['sigPubKey'], 
+        sigPubKey: localStorage['sigPubKey'],
+        tellersPubShare: this.props.tellersPubShare,
         eKey: isNaN(this.state.eKey)?this.state.eKey:hexToBase64(parseInt(this.state.eKey).toString(16)),
         choice: num,
         accumBase: hexToBase64(this.props.accumBase),
@@ -100,6 +101,7 @@ class Ballot extends React.Component {
     })
     .then(res => {
       if(res.status === 200) return res.json();
+      else console.log("error in create ballot");
     })
     .then(data => [data.signature, data.message.map(data => base64ToBytes32(data))]);
     let [pubKeyAccum, linkableTag] = rawSignature.slice(0, 2).map(data => base64ToBytes32(data));

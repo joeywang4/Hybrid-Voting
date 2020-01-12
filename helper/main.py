@@ -3,10 +3,10 @@ from flask import request
 from flask_cors import CORS
 import json
 from Crypto.Hash import keccak
-from signature import gen_sig_keypair, gen_sig_param, gen_accum_voters, sign_ballot
+from signature import gen_sig_keypair, gen_sig_param, gen_accum_voters, sign_ballot, is_valid_sig_pair
 from RSAsignatue import RSA_siganture
-from elgamal import encrypt
-from util import int_to_str, str_to_int, randrange
+from elgamal import encrypt, decrypt
+from util import int_to_str, str_to_int, randrange, listHex_to_int
 
 app = flask.Flask(__name__)
 CORS(app)
@@ -71,18 +71,24 @@ def genElectionSignature():
 
 @app.route('/numberSignature', methods=['POST'])
 def genNumberSignature():
+  print(request.json['number'])
   try:
     number = request.json['number']
     if number.isnumeric():
       number = int(number)
     else:
       number = str_to_int(number)
+    print(number)
     sk = request.json['sigPrivKey']
     sk_p, sk_q = [str_to_int(x) for x in sk.split(";")]
+    print(sk_p, sk_q)
     data = number.to_bytes(128, 'big', signed=False)
+    print(data)
     digest = keccak.new(data=data, digest_bits=256).digest()
     digest = int.from_bytes(digest, 'big', signed=False)
+    print(digest)
     sig = RSA_siganture(sk_p, sk_q, digest)
+    print(sig)
     return int_to_str(sig)
   except:
     return "Error"
@@ -109,16 +115,41 @@ def createBallot():
     sk_p, sk_q = str_to_int(sk_p), str_to_int(sk_q)
     pk = str_to_int(request.json['sigPubKey'])
     k = str_to_int(request.json['eKey'])
-    h = pow(base, k, module)
-    c1, c2 = encrypt(h, int(request.json['choice']))
+    pubKey = 1
+    print(list_of_pks, sk_p, sk_q, pk, k)
+    if not is_valid_sig_pair(sk_p, sk_q, pk):
+      return "Bad Key Pair", 400
+    tellersPubShare = [int(pubShare, 16) for pubShare in request.json['tellersPubShare']]
+    for i in range(len(tellersPubShare)):
+      pubKey *= tellersPubShare[i]
+      pubKey %= module
+    c1, c2 = encrypt(pubKey, k, int(request.json['choice']))
     accumBase = str_to_int(request.json['accumBase'])
     linkBase = str_to_int(request.json['linkBase'])
 
     sig = sign_ballot(list_of_pks, (sk_p, sk_q, pk), (c1, c2), (accumBase, linkBase))
     sig = [int_to_str(x) for x in sig]
-    print(json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]}))
     return json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]})
   #except:
-  #  return "Error"
+  #  return "Error", 400
+
+@app.route('/decryptBallot', methods=['POST'])
+def decryptBallot():
+  c1, c2 = [listHex_to_int(cipher) for cipher in [request.json['message'][0:4], request.json['message'][4:8]]]
+  pubShares = [listHex_to_int(pubShare) for pubShare in request.json['pubShares']]
+  secrets = [listHex_to_int(secret) for secret in request.json['secret']]
+  if len(pubShares) != len(secrets):
+    return "Invalid key sharing", 400
+  for i in range(len(pubShares)):
+    if pow(base, secrets[i], module) != pubShares[i]:
+      print(i)
+      return "Invlid secret", 400
+  privKey = sum(secrets)
+  pubKey = 1
+  for pubShare in pubShares:
+    pubKey *= pubShare
+    pubKey %= module
+  pt = decrypt(privKey, c1, c2)
+  return json.dumps({"choice": pt}), 200
 
 app.run(host="localhost", port=8000)

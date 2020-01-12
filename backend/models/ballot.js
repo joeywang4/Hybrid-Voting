@@ -2,13 +2,13 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const BallotSchema = new Schema({
+  address: {
+	  type: String,
+	  required: [true, 'Address of election is required.']
+  },
 	ballotId: {
 		type: Number,
 		required: [true, 'Ballot ID is required.']
-  },
-  rawMsg: {
-    type: String,
-    required: [true, 'Decrypted message is required']
   },
   choice: {
     type: Number,

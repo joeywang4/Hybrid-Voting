@@ -24,6 +24,7 @@ function base64ToBytes32(data, byteLength=0) {
 
 function hexToBase64(_str) {
   if(_str.substring(0, 2) === "0x") _str = _str.substring(2);
+  if(_str.length % 2 !== 0) _str = "0".concat(_str);
   return btoa(String.fromCharCode.apply(null,
     _str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
   );

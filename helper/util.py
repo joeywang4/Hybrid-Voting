@@ -54,4 +54,8 @@ def Hash(*args):
 
 def intToBytesArray(x, n):
   h = hex(x)[2:].rjust(2*n, '0')
-  return ["0x"+h[i*64:(i+1)*64] for i in range(len(h)//64)] 
+  return ["0x"+h[i*64:(i+1)*64] for i in range(len(h)//64)]
+
+def listHex_to_int(_hex):
+  data = "".join([one_hex[2:] for one_hex in _hex])
+  return int(data, 16)

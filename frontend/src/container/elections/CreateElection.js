@@ -281,6 +281,14 @@ class CreateElection extends React.Component {
     }
     const [title, description] = [this.title, this.description];
     const [begin, end] =  [Date.parse(this.beginDate + " " + this.beginTime)/1000, Date.parse(this.endDate + " " + this.endTime)/1000];
+    if(end <= begin) {
+      this.setState(state => {
+        state.err = "End time should be later than begin time!"
+        state.createState = ERROR;
+        return state;
+      })
+      return;
+    }
     const choices = this.state.choices;
     let [voters, votersPubKey, tellers] = [[], [], []];
     for(let [user, selected] of Object.entries(this.state.voters)) {

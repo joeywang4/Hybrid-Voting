@@ -22,6 +22,7 @@ class Election extends React.Component {
     this.description = "";
     this.begin = 0;
     this.end = 0;
+    this.ballots = [];
     this.choices = [];
     this.voters = [];
     this.tellers = [];
@@ -71,6 +72,7 @@ class Election extends React.Component {
       this.description = data.description;
       this.choices = data.choices;
       this.voters = data.voters;
+      this.ballots = data.ballots;
       dbSuccess = true;
     })
     .catch(err => {
@@ -245,6 +247,7 @@ class Election extends React.Component {
                     ended={now > end}
                     voters={this.voters}
                     choices={this.choices}
+                    tellersPubShare={this.tellersPubShare}
                     accumBase={this.accumBase}
                     accumVoters={this.accumVoters}
                     linkBase={this.linkBase}
@@ -257,6 +260,8 @@ class Election extends React.Component {
                     ended={now > end}
                     tellersPubShare={this.tellersPubShare}
                     tellersSecret={this.tellersSecret}
+                    ballots={this.ballots}
+                    choices={this.choices}
                     address={this.props.address}
                     hasClient={this.props.hasClient}
                   />

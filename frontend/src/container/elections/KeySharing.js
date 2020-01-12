@@ -132,8 +132,11 @@ class KeySharing extends React.Component {
   sendSecret = async _ => {
     this.setState({formStatus: LOADING});
     let secret = "";
+    console.log(this.state.secret);
     if(!isNaN(this.state.secret)) {
       secret = hexToBase64(parseInt(this.state.secret).toString(16));
+      console.log(parseInt(this.state.secret).toString(16));
+      console.log("[Key137]", secret)
     } else secret = this.state.secret;
     const signature = await this.signNumber(secret);
     sendElgamalSecret(this.tellerId, base64ToBytes32(secret, 128), base64ToBytes32(signature, 128), this.props.address, this.onHash, this.onConfirmed);

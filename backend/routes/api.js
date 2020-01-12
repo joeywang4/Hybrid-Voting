@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const fetch = require('node-fetch');
 const User = require('../models/user');
 const Election = require('../models/election');
 const Ballot = require('../models/ballot');
-const { getMessage } = require("../contract/Election");
+const { getBallotsCount, getMessage, getTellersSecret, getTellersPubShare } = require("../contract/Election");
 
 /* Handle Users */
 router.get('/user', (req, res) => {
@@ -183,29 +184,75 @@ router.get('/ballots', (req, res) => {
 
 router.get('/ballot', (req, res) => {
   let d = new Date();
-  let qry = "";
-  if(req.query.id) {
-    qry = req.query.id;
-  }
-  else {
-    res.status(400).send("Missing query string: id=[ballotId]");
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Ballot query failed: No ballot id`);
-    return;
+  let _ballotId = "";
+  let _address = "";
+  if(req.query.ballotId && req.query.address) {
+    _ballotId = req.query.ballotId;
+    _address = req.query.address;
   }
 
-  if(qry !== "") {
-    Ballot.findById(qry, '_id ballotId rawMsg choice', (err, _ballot) => {
+  if(_ballotId !== "" && _address !== "") {
+    Ballot.findOne({address: _address, ballotId: _ballotId}, '_id rawMsg choice', (err, _ballot) => {
       if(err) return errHandler(err, res);
       else if(!_ballot) res.status(404).send(null);
       else res.status(200).send(_ballot.toObject());
     });
   }
+  else {
+    res.status(400).send("Missing query string: id=[ballotId] or address=[election address]");
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Ballot query failed: No ballot id`);
+    return;
+  }
 })
 
 router.get('/decryptBallot', async (req, res) => {
-  const { id, address } = req.query;
-  const message = await getMessage(id, address);
-  console.log(message);
+  const { ballotId, address } = req.query;
+  console.log(ballotId, address)
+  const count = await getBallotsCount(address);
+  if(ballotId >= count) {
+    res.status(404).send("Invalid ballot id");
+    return;
+  }
+  // Check decrypted or not
+  let _ballot = await Ballot.findOne({address, ballotId}, 'rawMsg choice')
+  .then(ballot => ballot)
+  .catch(err => errHandler(err));
+  if(_ballot) {
+    res.status(200).send(_ballot.toObject());
+    return;
+  }
+
+  const [message, secret, pubShares] = await Promise.all([getMessage(ballotId, address), getTellersSecret(address), getTellersPubShare(address)]);
+  const result = await fetch(process.env.HELPER_ADDR+"/decryptBallot", {
+    method: "POST",
+    body: JSON.stringify({message, secret, pubShares}),
+    headers: {'content-type': "application/json"}
+  })
+  .then(res => {
+    if(res.status === 200) {
+      return res.json()
+    }
+  })
+  .then(data => data);
+
+  if(result === undefined) { 
+    res.status(400).send("Decryption Failed");
+  }
+  const _mongoBallot = new Ballot({address, ballotId, choice: result.choice});
+  const id = await _mongoBallot.save()
+  .then(_newBallot => _newBallot._id)
+  .catch(err => errHandler(err, res));
+  console.log("New ballot id:", id);
+  await Election.updateOne({address}, {$push: {ballots: id}});
+  
+  if(result === undefined) {
+    res.status(400).send("Decryption Failed");
+    return;
+  }
+  else {
+    res.status(200).send(result);
+    return;
+  }
 })
 
 router.get('/redirect/:path', (req, res) => {

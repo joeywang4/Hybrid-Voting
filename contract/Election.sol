@@ -103,6 +103,7 @@ contract Election {
         bytes32[4] memory _accumVoters,
         bytes32[4] memory _signature
     ) public {
+        require(_begin < _end, "Begin time no later than end time");
         bytes memory packed = abi.encodePacked(_begin, _end, _tellers, _admin, _accumBase, _linkBase, _accumVoters);
         require(VerifyContract.isValidRSASig([ bytes32(0), bytes32(0), bytes32(0), keccak256(packed)], _signature, _admin), "Bad Signature");
         begin = _begin;
@@ -124,7 +125,7 @@ contract Election {
     }
 
     function sendElgamalPubShare(uint32 tellerId, bytes32[4] memory h, bytes32[4] memory signature) public {
-        require(now < begin);
+        require(now < begin, "Election is running");
         require(keccak256(abi.encodePacked(tellersPubShare[tellerId])) == keccak256(abi.encodePacked([bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))])), "No Double Sharing");
         require(VerifyContract.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(h))], signature, tellers[tellerId]), "Bad Signature");
         tellersPubShare[tellerId] = h;
@@ -166,9 +167,9 @@ contract Election {
         bytes32[linkableTagLength/32] memory _linkableTag,
         bytes32[signatureLength/32] memory _signature
     ) public {
-        require(now >= begin);
-        require(now <= end);
-        require(keccak256(abi.encodePacked(_pubKeyAccum)) == keccak256(abi.encodePacked(accumVoters)));
+        require(now >= begin, "Election is not started");
+        require(now <= end, "Election is ended");
+        require(keccak256(abi.encodePacked(_pubKeyAccum)) == keccak256(abi.encodePacked(accumVoters)), "Bad accumVoters");
         require(verifyLinkableTag(_linkableTag), "Bad linkableTag");
         uint8[validatorLength] memory validator = [0,0,0,0,0,0,0,0,0,0];
         uint id = ballots.push(Ballot(_message, _pubKeyAccum, _linkableTag, _signature, validator)) - 1;
@@ -181,7 +182,7 @@ contract Election {
     function getPubKeyAccum(uint32 _idx) public view returns(bytes32[pubKeyAccumLength/32] memory) { return ballots[_idx].pubKeyAccum; }
     function getLinkableTag(uint32 _idx) public view returns(bytes32[linkableTagLength/32] memory) { return ballots[_idx].linkableTag; }
     function getSignature(uint32 _idx) public view returns(bytes32[signatureLength/32] memory _signature) { return ballots[_idx].signature; }
-    function getVaidator(uint32 _idx) public view returns(uint8[validatorLength] memory) { return ballots[_idx].validator; }
+    function getValidator(uint32 _idx) public view returns(uint8[validatorLength] memory) { return ballots[_idx].validator; }
 
     function verifyLinkableTag(bytes32[linkableTagLength/32] memory _linkableTag) public view returns(bool) {
         for (uint32 i = 0; i<ballots.length; ++i) {
@@ -201,7 +202,7 @@ contract Election {
         VerifySignature(_voterId, 4);
         VerifySignature(_voterId, 5);
     }
-    
+
     function verify3 (uint32 _voterId) public {
         VerifySignature(_voterId, 6);
         VerifySignature(_voterId, 7);
@@ -246,10 +247,10 @@ contract Election {
             result = VerifyContract.DiscreteLogVerify(T,g,sigN,m,s1,e);
         else
             result = VerifyContract.DoubleDiscreteLogVerify(T,g,h,sigN,m,s1,s2,e);
-        
+
         if (result) ballots[_voterId].validator[i] = 2;
         else ballots[_voterId].validator[i] = 1;
-        
+
         return result;
     }
 }
