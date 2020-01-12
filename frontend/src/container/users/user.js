@@ -1,6 +1,5 @@
 import React from 'react';
-import Solved from './solved';
-import { Container, Header, Icon, Divider, Loader } from 'semantic-ui-react';
+import { Container, Header, Icon, Loader } from 'semantic-ui-react';
 import {BACKEND_URL} from '../../const_val';
 
 const [FAILED, SUCCESS, LOADING, MISSING] = [0, 1, 2, 3];
@@ -73,13 +72,6 @@ class User extends React.Component {
                   <Header size='huge'>{this.user.name}</Header>
                   <Header size='medium'>{this.user.email}</Header>
                   <div style={{marginTop: "2vh"}} />
-                  <Divider horizontal>
-                    <Header size="small">
-                      <Icon name="thumbs up outline" />
-                      Solved Challenges
-                    </Header>
-                  </Divider>
-                  <Solved solver={this.props.id}/>
                 </React.Fragment>
         }
       </Container>

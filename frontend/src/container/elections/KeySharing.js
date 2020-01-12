@@ -1,6 +1,6 @@
 import React from 'react';
 import { Header, Icon, Divider, Form, Grid, Message, Button, Portal, Segment, Table, Popup, Container } from 'semantic-ui-react';
-import { sendElgamalPubShare, sendElgamalSecret } from '../../contract/election';
+import { sendElgamalPubShare, sendElgamalSecret, getTellersPubShare, getTellersSecret } from '../../contract/election';
 import { base64ToBytes32, hexToBase64 } from '../../contract/util';
 import { CLIENT_URL, NO_CLIENT_URL } from "../../const_val";
 
@@ -15,7 +15,9 @@ class KeySharing extends React.Component {
       privateKey: "",
       secret: 0,
       publicShare: "",
-      tellersOpen: false
+      tellersOpen: false,
+      tellersPubShare: props.tellersPubShare,
+      tellersSecret: props.tellersSecret
     }
     this.tellerId = -1;
     this.hasSharedPub = false;
@@ -105,10 +107,13 @@ class KeySharing extends React.Component {
     })
   }
 
-  onConfirmed = (confirmationNumber, receipt) => {
+  onConfirmed = async (confirmationNumber, receipt) => {
     console.log("[*] Confirmed.", confirmationNumber, receipt);
+    const [_tellersPubshare, _tellersSecret] = await Promise.all([getTellersPubShare(this.props.address), getTellersSecret(this.props.address)]);
     this.setState(state => {
       state.formStatus = IDLE;
+      state.tellersPubShare = _tellersPubshare;
+      state.tellersSecret = _tellersSecret;
       state.msg = (
         <Message positive icon>
           <Icon name='check' />
@@ -132,11 +137,8 @@ class KeySharing extends React.Component {
   sendSecret = async _ => {
     this.setState({formStatus: LOADING});
     let secret = "";
-    console.log(this.state.secret);
     if(!isNaN(this.state.secret)) {
-      secret = hexToBase64(parseInt(this.state.secret).toString(16));
-      console.log(parseInt(this.state.secret).toString(16));
-      console.log("[Key137]", secret)
+      secret = hexToBase64(parseInt(this.state.secret).toString(16))      
     } else secret = this.state.secret;
     const signature = await this.signNumber(secret);
     sendElgamalSecret(this.tellerId, base64ToBytes32(secret, 128), base64ToBytes32(signature, 128), this.props.address, this.onHash, this.onConfirmed);

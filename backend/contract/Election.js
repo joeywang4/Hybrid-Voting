@@ -792,7 +792,7 @@ const getSignature = async (_idx, address) => {
 
 const getValidator = async (_idx, address) => {
   const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getValidator().call()
+  return await Contract.methods.getValidator(_idx).call()
   .then(data => data);
 }
 

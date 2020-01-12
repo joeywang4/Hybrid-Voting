@@ -1,5 +1,4 @@
 import React from 'react';
-import Solved from './solved';
 import { Container, Header, Icon, Divider, Loader } from 'semantic-ui-react';
 import EditUser from "./editUser";
 import {BACKEND_URL} from '../../const_val';
@@ -78,14 +77,6 @@ class User extends React.Component {
                 <React.Fragment>
                   <Header size='huge'>{this.user.name}</Header>
                   <Header size='medium'>{this.user.email}</Header>
-                  <div style={{marginTop: "2vh"}} />
-                  <Divider horizontal>
-                    <Header size="small">
-                      <Icon name="thumbs up outline" />
-                      Solved Challenges
-                    </Header>
-                  </Divider>
-                  <Solved solver={this.user._id}/>
                   <div style={{marginTop: "2vh"}} />
                   <Divider horizontal>
                     <Header size="small">

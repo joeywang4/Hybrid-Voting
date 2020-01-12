@@ -116,7 +116,7 @@ def createBallot():
     pk = str_to_int(request.json['sigPubKey'])
     k = str_to_int(request.json['eKey'])
     pubKey = 1
-    print(list_of_pks, sk_p, sk_q, pk, k)
+
     if not is_valid_sig_pair(sk_p, sk_q, pk):
       return "Bad Key Pair", 400
     tellersPubShare = [int(pubShare, 16) for pubShare in request.json['tellersPubShare']]
@@ -126,7 +126,6 @@ def createBallot():
     c1, c2 = encrypt(pubKey, k, int(request.json['choice']))
     accumBase = str_to_int(request.json['accumBase'])
     linkBase = str_to_int(request.json['linkBase'])
-
     sig = sign_ballot(list_of_pks, (sk_p, sk_q, pk), (c1, c2), (accumBase, linkBase))
     sig = [int_to_str(x) for x in sig]
     return json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]})
@@ -144,7 +143,7 @@ def decryptBallot():
     if pow(base, secrets[i], module) != pubShares[i]:
       print(i)
       return "Invlid secret", 400
-  privKey = sum(secrets)
+  privKey = sum(secrets) % (module-1)
   pubKey = 1
   for pubShare in pubShares:
     pubKey *= pubShare

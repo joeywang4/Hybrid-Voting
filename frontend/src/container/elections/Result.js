@@ -13,7 +13,9 @@ class Result extends React.Component {
       status: LOADING,
       validateStatus: [],
       validation: [],
-      sigOpen: false
+      decryptStatus: [],
+      sigOpen: false,
+      sigId: 0
     }
     this.ballots = [];
     this.keyShared = props.ended;
@@ -24,6 +26,10 @@ class Result extends React.Component {
   }
 
   decryptBallot = async _id => {
+    this.setState(state => {
+      state.decryptStatus[_id] = LOADING;
+      return state;
+    })
     return await fetch(BACKEND_URL+`/decryptBallot?address=${this.props.address}&ballotId=${_id}`)
     .then(res => {
       if(res.status !== 200) {
@@ -35,7 +41,10 @@ class Result extends React.Component {
     })
     .then(data => {
       this.ballots[_id].choice = data.choice;
-      console.log("OK");
+      this.setState(state => {
+        state.decryptStatus[_id] = IDLE;
+        return state;
+      })
       return data.choice;
     })
     .catch(err => {
@@ -59,7 +68,8 @@ class Result extends React.Component {
     this.setState(state => {
       state.status = IDLE;
       state.validateStatus = this.ballots.map(_ => IDLE);
-      state.validation = this.ballots.map(ballot => ballot.validator);
+      state.decryptStatus = this.ballots.map(_ => IDLE);
+      state.validation = this.ballots.map(ballot => this.encodeValidator(ballot.validator));
       return state;
     });
   }
@@ -67,11 +77,13 @@ class Result extends React.Component {
   encodeValidator = validator => {
     let output = "";
     for(let _val of validator) output = output.concat(_val.toString());
+    return output;
   }
 
   decodeValidator = encoded => {
     let output = [];
     for(let i = 0;i < encoded.length;i++) output.push(parseInt(encoded[i]));
+    return output;
   }
 
   validateBallot = async (id, stage) => {
@@ -82,19 +94,22 @@ class Result extends React.Component {
         return state;
       })
     }
-    const onConfirmed = (confirmationNumber, receipt) => {
+    const onConfirmed = async (confirmationNumber, receipt) => {
       console.log("[*] Confirmed.", confirmationNumber, receipt);
+      const newValidator = await getValidator(id, this.props.address);
       this.setState(state => {
         state.validateStatus[id] = SUCCESS;
+        state.validation[id] = this.encodeValidator(newValidator);
         return state;
       })
     }
     VerifySignature(id, stage, this.props.address, onHash, onConfirmed);
   }
 
-  handleOpenSig = () => {
+  handleOpenSig = id => {
     this.setState(state => {
       state.sigOpen = true;
+      state.sigId = id;
       return state;
     })
   }
@@ -149,8 +164,7 @@ class Result extends React.Component {
                 </Table.Header>
                 <Table.Body>
                   {(this.state.status !== IDLE)?null:this.ballots.map((ballot, id) => {
-                    let validateProcess = this.state.validation[id].reduce((_sum, validated) => validated===2?_sum+1:_sum, 0);
-                    console.log(validateProcess, ballot.validator);
+                    let validateProcess = this.decodeValidator(this.state.validation[id]).reduce((_sum, validated) => validated===2?_sum+1:_sum, 0);
                     return (
                       <Table.Row key={id}>
                         {/* Ballot */}
@@ -160,22 +174,7 @@ class Result extends React.Component {
                         />
                         
                         {/* Signature */}
-                        <Table.Cell selectable onClick={_ => {this.handleOpenSig()}}>
-                          <Portal onClose={_ => {this.handleCloseSig()}} open={this.state.sigOpen}>
-                            <Segment
-                              style={{
-                                left: "10%",
-                                width: "80%",
-                                top: "15vh",
-                                maxHeight: "60%",
-                                position: "fixed",
-                                zIndex: 1000,
-                                overflow: "auto"
-                              }}
-                            >
-                              <Container><p>{this.break(ballot.signature, 64)}</p></Container>
-                            </Segment>
-                          </Portal>
+                        <Table.Cell selectable onClick={_ => {this.handleOpenSig(id)}}>
                           {this.maxStr(ballot.signature, 20)}
                         </Table.Cell>
                         
@@ -185,11 +184,10 @@ class Result extends React.Component {
                             <React.Fragment>
                               <Popup
                                 position="top center"
-                                content={<List>{this.state.validation[id].map((verified, _idx) => <List.Item key={`stage${id}-${_idx+1}`} content={`Stage${_idx+1}: ${verified===2?"ok":(verified===1?"failed":"?")}`} />)}</List>}
+                                content={<List>{this.decodeValidator(this.state.validation[id]).map((verified, _idx) => <List.Item key={`stage${id}-${_idx+1}`} content={`Stage${_idx+1}: ${verified===2?"ok":(verified===1?"failed":"?")}`} />)}</List>}
                                 trigger={<p>{`${(validateProcess/ballot.validator.length)*100}%`}</p>}
                               />
-                              <Button size="tiny" positive onClick={_ => {this.validateBallot(id, Math.floor(validateProcess/3))}}>Validate</Button>
-                              {this.state.validateStatus[id]===LOADING?<Loader inline active />:null}
+                              <Button loading={this.state.validateStatus[id]===LOADING} size="tiny" positive onClick={_ => {this.validateBallot(id, Math.floor(validateProcess/3))}}>Validate</Button>
                               {this.state.validateStatus[id]===SUCCESS?<Icon color="green" name="check" />:null}
                             </React.Fragment>
                           }
@@ -198,7 +196,7 @@ class Result extends React.Component {
                         {/* Choice */}
                         <Table.Cell>
                           {ballot.choice === -1?
-                            <Button negative onClick={_ => {this.decryptBallot(id)}}>
+                            <Button disabled={!this.keyShared || validateProcess !== ballot.validator.length} loading={this.state.decryptStatus[id]===LOADING} negative onClick={_ => {this.decryptBallot(id)}}>
                               Decrypt
                             </Button>
                           :
@@ -209,6 +207,27 @@ class Result extends React.Component {
                         </Table.Cell>
                       </Table.Row> 
                   )})}
+                  <Portal onClose={_ => {this.handleCloseSig()}} open={this.state.sigOpen}>
+                    <Segment
+                      textAlign="center"
+                      style={{
+                        left: "10%",
+                        width: "80%",
+                        top: "15vh",
+                        maxHeight: "60%",
+                        position: "fixed",
+                        zIndex: 1000,
+                        overflow: "auto"
+                      }}
+                    >
+                      <Container><p>{this.ballots.length>0?this.break(this.ballots[this.state.sigId].signature, 64):""}</p></Container>
+                      <Button
+                        content='Close'
+                        negative
+                        onClick={this.handleCloseSig}
+                      />
+                    </Segment>
+                  </Portal>
                 </Table.Body>
               </Table>
               {this.state.msg?this.state.msg:null}

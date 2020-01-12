@@ -4,7 +4,7 @@ import { castBallot } from '../../contract/election';
 import { CLIENT_URL, NO_CLIENT_URL } from '../../const_val';
 import { hexToBase64, base64ToBytes32 } from '../../contract/util';
 
-const [ERROR, LOADING, IDLE] = [0, 1, 2];
+const [LOADING, IDLE] = [0, 1];
 
 class Ballot extends React.Component {
   constructor(props) {
@@ -16,6 +16,7 @@ class Ballot extends React.Component {
       privateKey: ""
     }
     this.isVoter = false;
+    this.counts = [];
     this.fileInputRef = React.createRef();
     
     if(localStorage['email']) {
@@ -25,6 +26,11 @@ class Ballot extends React.Component {
           break;
         }
       }
+    }
+    this.counts = this.props.choices.map(_ => 0);
+    this.counts.push(0);
+    for(let ballot of this.props.ballots) {
+      this.counts[Math.log2(ballot.choice)] += 1;
     }
   }
 
@@ -110,6 +116,7 @@ class Ballot extends React.Component {
     for(let i = 0;i < rawSignature.length;i++) {
       signature = signature.concat(base64ToBytes32(rawSignature[i]));
     }
+    console.log(c1.concat(c2), pubKeyAccum, linkableTag, signature);
     castBallot(c1.concat(c2), pubKeyAccum, linkableTag, signature, this.props.address, this.onHash, this.onConfirmed);
   }
 
@@ -181,7 +188,7 @@ class Ballot extends React.Component {
                   <Table.Header>
                     <Table.Row>
                       <Table.HeaderCell>Choices</Table.HeaderCell>
-                      <Table.HeaderCell collapsing></Table.HeaderCell>
+                      <Table.HeaderCell collapsing>{this.props.ended?"Count":""}</Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -192,7 +199,11 @@ class Ballot extends React.Component {
                             <Header as='h2' textAlign="center">{choice}</Header>
                           </Table.Cell>
                           <Table.Cell collapsing>
-                            <Button disabled={!canVote} positive onClick={_ => {this.onVote(this.choiceToNum(id))}}>Vote</Button>
+                            {!this.props.ended?
+                              <Button disabled={!canVote} positive onClick={_ => {this.onVote(this.choiceToNum(id))}}>Vote</Button>
+                            :
+                              <span>{this.counts[id]}</span>
+                            }
                           </Table.Cell>
                         </Table.Row>
                       )
@@ -202,9 +213,13 @@ class Ballot extends React.Component {
                     <Table.Row>
                       <Table.HeaderCell negative>Abstain</Table.HeaderCell>
                       <Table.HeaderCell collapsing>
-                        <Button disabled={!canVote} negative onClick={_ => {this.onVote(this.choiceToNum(this.props.choices.length))}}>
-                          Vote
-                        </Button>
+                        {!this.props.ended?
+                          <Button disabled={!canVote} negative onClick={_ => {this.onVote(this.choiceToNum(this.props.choices.length))}}>
+                            Vote
+                          </Button>
+                        :
+                          <span>{this.counts[this.counts.length-1]}</span>
+                        }
                       </Table.HeaderCell>
                     </Table.Row>
                   </Table.Footer>

@@ -139,7 +139,7 @@ class Election extends React.Component {
                   <Header size="huge" textAlign='center'>
                     {this.title}
                   </Header>
-                  <Container textAlign='center' style={{minHeight: "16vh", marginTop: "2vh"}}>
+                  <Container textAlign='center' style={{minHeight: "5vh", marginTop: "2vh"}}>
                     <p style={{fontSize: "1.5em", whiteSpace: "pre-wrap"}}>{this.description}</p>
                   </Container>
                   {/* Time Range */}
@@ -251,6 +251,7 @@ class Election extends React.Component {
                     accumBase={this.accumBase}
                     accumVoters={this.accumVoters}
                     linkBase={this.linkBase}
+                    ballots={this.ballots}
                     address={this.props.address}
                     hasClient={this.props.hasClient}
                   />

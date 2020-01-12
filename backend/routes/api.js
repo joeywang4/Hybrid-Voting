@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const User = require('../models/user');
 const Election = require('../models/election');
 const Ballot = require('../models/ballot');
-const { getBallotsCount, getMessage, getTellersSecret, getTellersPubShare } = require("../contract/Election");
+const { getBallotsCount, getMessage, getTellersSecret, getTellersPubShare, getValidator } = require("../contract/Election");
 
 /* Handle Users */
 router.get('/user', (req, res) => {
@@ -222,7 +222,12 @@ router.get('/decryptBallot', async (req, res) => {
     return;
   }
 
-  const [message, secret, pubShares] = await Promise.all([getMessage(ballotId, address), getTellersSecret(address), getTellersPubShare(address)]);
+  const [message, secret, pubShares, validator] = await Promise.all([getMessage(ballotId, address), getTellersSecret(address), getTellersPubShare(address), getValidator(ballotId, address)]);
+  for(let val of validator) {
+    if(val !== "2") {
+      res.status(400).send("Not validated");
+    }
+  }
   const result = await fetch(process.env.HELPER_ADDR+"/decryptBallot", {
     method: "POST",
     body: JSON.stringify({message, secret, pubShares}),
