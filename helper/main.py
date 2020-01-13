@@ -101,14 +101,13 @@ def exp():
       power = int(power)
     else:
       power = str_to_int(power)
-    print(power, hex(pow(base, power, module)))
     return int_to_str(pow(base, power, module))
   except:
     return "Error"
 
 @app.route('/createBallot', methods=['POST'])
 def createBallot():
-  #try:
+  try:
     list_of_pks = request.json['voters']
     list_of_pks = [str_to_int(x) for x in list_of_pks]
     sk_p, sk_q = request.json['sigPrivKey'].split(";")
@@ -129,8 +128,8 @@ def createBallot():
     sig = sign_ballot(list_of_pks, (sk_p, sk_q, pk), (c1, c2), (accumBase, linkBase))
     sig = [int_to_str(x) for x in sig]
     return json.dumps({"signature": sig, "message": [int_to_str(c1), int_to_str(c2)]})
-  #except:
-  #  return "Error", 400
+  except:
+    return "Error", 400
 
 @app.route('/decryptBallot', methods=['POST'])
 def decryptBallot():

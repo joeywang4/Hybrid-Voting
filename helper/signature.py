@@ -38,9 +38,6 @@ def gen_sig_keypair():
       while not is_next_prime:
         sk_q = sk_q + 2
         is_next_prime = number.isPrime(sk_q)
-  print("sk_p:", sk_p)
-  print("sk_q:", sk_q)
-  print("pk:", pk)
   return keypair_to_json(sk_p, sk_q, pk)
 
 def get_generator(p, q):
@@ -91,7 +88,7 @@ def sign_ballot(list_of_pks, key_pair, m, param):
     product_of_other_pk = (product_of_other_pk * other_pk) % phiN_sig
   v = pow(w, pk, N_sig) # all public key accumulated
 
-  r = randrange(2, phiN_sig) # a secret random seed need to be proved
+  r = randrange(2, phiN_sig) # a secret random seed need to be 
   T1 = pow(g, r, N_sig)
   T2 = (pow(g, pk, N_sig) * pow(h, r, N_sig)) % N_sig
   T3 = (pow(g, sk_q, N_sig) * pow(s, r, N_sig)) % N_sig

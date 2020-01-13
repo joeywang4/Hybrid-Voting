@@ -116,7 +116,6 @@ class Ballot extends React.Component {
     for(let i = 0;i < rawSignature.length;i++) {
       signature = signature.concat(base64ToBytes32(rawSignature[i]));
     }
-    console.log(c1.concat(c2), pubKeyAccum, linkableTag, signature);
     castBallot(c1.concat(c2), pubKeyAccum, linkableTag, signature, this.props.address, this.onHash, this.onConfirmed);
   }
 

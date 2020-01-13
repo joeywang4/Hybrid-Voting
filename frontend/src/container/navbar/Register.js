@@ -116,14 +116,12 @@ class RegisterForm extends React.Component {
           <Form
             onSubmit={e => {
               e.preventDefault();
-              console.log(this.email, this.pwd, this.name);
               fetch(BACKEND_URL+"/auth/register", {
                 method: "POST",
                 body: JSON.stringify({name: this.name, email: this.email, pwd: this.pwd, sigPubKey: this.sigPubKey}),
                 headers: {'content-type': "application/json"}
               })
               .then(res => {
-                console.log(res.status);
                 if(res.status === 400 || res.status === 401 || res.status === 404){
                   res.text()
                   .then(text => {

@@ -12,12 +12,14 @@ function base64ToBytes32(data, byteLength=0) {
   let hexData = base64ToHex(data);
   if(byteLength*2 > hexData.length) hexData = "0".repeat(byteLength*2 - hexData.length) + hexData;
   let ret = [];
+  let _len = hexData.length;
   let i = 0;
   for(;i < Math.floor(hexData.length/64);i++) {
-    ret.push("0x"+hexData.substring(i*64, (i+1)*64>hexData.length?hexData.length:(i+1)*64));
+
+    ret = ["0x"+hexData.substring((_len-(i+1)*64), (_len-i*64))].concat(ret);
   }
   if(i*64 < hexData.length) {
-    ret.push("0x"+"0".repeat((i+1)*64 - hexData.length)+hexData.substring(i*64));
+    ret = ["0x"+"0".repeat((i+1)*64 - _len)+hexData.substring(0, _len-i*64)].concat(ret);
   }
   return ret;
 }
