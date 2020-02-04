@@ -1,4 +1,4 @@
-pragma solidity >=0.5 <0.6;
+pragma solidity >=0.5.0 <0.6.0;
 
 library BigNumber {
     function bitLength(uint x) internal pure returns (uint) {

@@ -1,45 +1,10 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-contract VerifyInterface {
-    function DiscreteLogVerify(
-        bytes32[4] memory _y,
-        bytes32[4] memory _g,
-        bytes32[4] memory _p,
-        bytes32[8] memory _m,
-        bytes32[4] memory _s,
-        bytes32 _e
-    ) public returns(bool);
-    function DoubleDiscreteLogVerify(
-        bytes32[4] memory _y,
-        bytes32[4] memory _g1,
-        bytes32[4] memory _g2,
-        bytes32[4] memory _p,
-        bytes32[8] memory _m,
-        bytes32[4] memory _s1,
-        bytes32[4] memory _s2,
-        bytes32 _e
-    ) public returns(bool);
-    function modmulWrapper(
-        bytes32[4] memory _a,
-        bytes32[4] memory _b,
-        bytes32[4] memory _m
-    ) public returns (bytes32[4] memory);
-    function modexpWrapper(
-        bytes32[4] memory _b,
-        bytes32[4] memory _e,
-        bytes32[4] memory _m
-    ) public returns (bytes32[4] memory);
-    function isValidRSASig(
-        bytes32[4] memory message,
-        bytes32[4] memory signature,
-        bytes32[4] memory pubKey
-    ) public returns (bool);
-}
+import "./verify.sol";
 
 contract Election {
     /* Interface */
-    address VerifyAddress = 0xf9B1E4298d4cFa18Dce559A3033eDb8Dd9A7b421;
-    VerifyInterface VerifyContract = VerifyInterface(VerifyAddress);
+    using Verify for *;
 
     /* Events */
     event NewElection(address electionAddr);
@@ -105,7 +70,7 @@ contract Election {
     ) public {
         require(_begin < _end, "Begin time no later than end time");
         bytes memory packed = abi.encodePacked(_begin, _end, _tellers, _admin, _accumBase, _linkBase, _accumVoters);
-        require(VerifyContract.isValidRSASig([ bytes32(0), bytes32(0), bytes32(0), keccak256(packed)], _signature, _admin), "Bad Signature");
+        require(Verify.isValidRSASig([ bytes32(0), bytes32(0), bytes32(0), keccak256(packed)], _signature, _admin), "Bad Signature");
         begin = _begin;
         end = _end;
         admin = _admin;
@@ -127,15 +92,15 @@ contract Election {
     function sendElgamalPubShare(uint32 tellerId, bytes32[4] memory h, bytes32[4] memory signature) public {
         require(now < begin, "Election is running");
         require(keccak256(abi.encodePacked(tellersPubShare[tellerId])) == keccak256(abi.encodePacked([bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))])), "No Double Sharing");
-        require(VerifyContract.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(h))], signature, tellers[tellerId]), "Bad Signature");
+        require(Verify.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(h))], signature, tellers[tellerId]), "Bad Signature");
         tellersPubShare[tellerId] = h;
-        elgamalPubKey = VerifyContract.modmulWrapper(elgamalPubKey, h, elgamalP);
+        elgamalPubKey = Verify.modmulWrapper(elgamalPubKey, h, elgamalP);
     }
 
     function sendElgamalSecret(uint32 tellerId, bytes32[4] memory secret, bytes32[4] memory signature) public {
         require(now > end);
-        require(VerifyContract.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(secret))], signature, tellers[tellerId]), "Bad Signature");
-        require(keccak256(abi.encodePacked(VerifyContract.modexpWrapper(elgamalBase, secret, elgamalP))) == keccak256(abi.encodePacked(tellersPubShare[tellerId])), "Bad Secret");
+        require(Verify.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(secret))], signature, tellers[tellerId]), "Bad Signature");
+        require(keccak256(abi.encodePacked(Verify.modexpWrapper(elgamalBase, secret, elgamalP))) == keccak256(abi.encodePacked(tellersPubShare[tellerId])), "Bad Secret");
         tellersSecret[tellerId] = secret;
     }
 
@@ -173,7 +138,6 @@ contract Election {
         require(verifyLinkableTag(_linkableTag), "Bad linkableTag");
         uint8[validatorLength] memory validator = [0,0,0,0,0,0,0,0,0,0];
         uint id = ballots.push(Ballot(_message, _pubKeyAccum, _linkableTag, _signature, validator)) - 1;
-        require(VerifySignature(uint32(id), 9), "Bad linkable tag signature");
         emit NewBallot(id);
     }
 
@@ -191,66 +155,4 @@ contract Election {
         return true;
     }
 
-    function verify1 (uint32 _voterId) public {
-        VerifySignature(_voterId, 0);
-        VerifySignature(_voterId, 1);
-        VerifySignature(_voterId, 2);
-    }
-
-    function verify2 (uint32 _voterId) public {
-        VerifySignature(_voterId, 3);
-        VerifySignature(_voterId, 4);
-        VerifySignature(_voterId, 5);
-    }
-
-    function verify3 (uint32 _voterId) public {
-        VerifySignature(_voterId, 6);
-        VerifySignature(_voterId, 7);
-        VerifySignature(_voterId, 8);
-    }
-
-    uint32[7][10] index = [
-    //    T,  g,   h,  s1,  s2,  e,
-        [ 0, 36,  36,  56,  56,  60, 0],
-        [ 4, 36,  40,  61,  65,  69, 1],
-        [ 8, 36,  44,  70,  74,  78, 1],
-        [12,  0,  52,  79,  83,  87, 1], // g=0 is accumBase
-        [16, 36,  48,  88,  92,  96, 1],
-        [20, 36,  36,  97,  97, 101, 0],
-        [24, 36,  36, 102, 102, 106, 0],
-        [28,  0,  52, 107, 111, 115, 1], // g=0 is accumbase
-        [32, 36,  48, 116, 120, 124, 1],
-        [ 0,  0,   0, 125, 125, 129, 0]  // linkableTag
-    ];
-
-    function VerifySignature (uint32 _voterId, uint32 i) private returns (bool) {
-        require (i >= 0 && i <= 9, "Bad verify stage");
-        bytes32[signatureLength/32] memory signature = ballots[_voterId].signature;
-        bytes32[4] memory T;
-        bytes32[4] memory g;
-        if (i==9) {
-            T = ballots[_voterId].linkableTag;
-            g = linkBase;
-        }
-        else {
-            T = [signature[index[i][0]],signature[index[i][0]+1],signature[index[i][0]+2],signature[index[i][0]+3]];
-            if (index[i][1] == 0) g = accumBase;
-            else g = [signature[index[i][1]],signature[index[i][1]+1],signature[index[i][1]+2],signature[index[i][1]+3]];
-        }
-        bytes32[4] memory h = [signature[index[i][2]],signature[index[i][2]+1],signature[index[i][2]+2],signature[index[i][2]+3]];
-        bytes32[8] memory m = ballots[_voterId].message;
-        bytes32[4] memory s1 = [signature[index[i][3]],signature[index[i][3]+1],signature[index[i][3]+2],signature[index[i][3]+3]];
-        bytes32[4] memory s2 = [signature[index[i][4]],signature[index[i][4]+1],signature[index[i][4]+2],signature[index[i][4]+3]];
-        bytes32 e = signature[index[i][5]];
-        bool result;
-        if (index[i][6] == 0)
-            result = VerifyContract.DiscreteLogVerify(T,g,sigN,m,s1,e);
-        else
-            result = VerifyContract.DoubleDiscreteLogVerify(T,g,h,sigN,m,s1,s2,e);
-
-        if (result) ballots[_voterId].validator[i] = 2;
-        else ballots[_voterId].validator[i] = 1;
-
-        return result;
-    }
 }

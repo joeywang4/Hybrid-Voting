@@ -3,98 +3,110 @@ let web3 = new Web3(window.ethereum);
 
 web3.eth.net.getNetworkType()
 .then(name => {
-  if(name !== "ropsten") console.error("Please switch to ropsten testnet!");
+  if(name !== "ropsten") console.error(`You are using ${name} network. Please switch to ropsten testnet!`);
 });
 
-const addr = "0x76686526759D735e6F8152323f2532b0a62FEA08";
+const addr = "0xA3D6B1bdE984f97D9E6683496A2447dcF18dbC29";
 const abi = [
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "Elections",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_begin",
-				"type": "uint64"
-			},
-			{
-				"name": "_end",
-				"type": "uint64"
-			},
-			{
-				"name": "_tellers",
-				"type": "bytes32[]"
-			},
-			{
-				"name": "_admin",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "_accumBase",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "_linkBase",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "_accumVoters",
-				"type": "bytes32[4]"
-			},
-			{
-				"name": "_signature",
-				"type": "bytes32[4]"
-			}
-		],
-		"name": "createElection",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getElectionsCount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "electionAddr",
-				"type": "address"
-			}
-		],
-		"name": "NewElection",
-		"type": "event"
-	}
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "electionAddr",
+        "type": "address"
+      }
+    ],
+    "name": "NewElection",
+    "type": "event"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "Elections",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "_begin",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_end",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "_tellers",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "bytes32[4]",
+        "name": "_admin",
+        "type": "bytes32[4]"
+      },
+      {
+        "internalType": "bytes32[4]",
+        "name": "_accumBase",
+        "type": "bytes32[4]"
+      },
+      {
+        "internalType": "bytes32[4]",
+        "name": "_linkBase",
+        "type": "bytes32[4]"
+      },
+      {
+        "internalType": "bytes32[4]",
+        "name": "_accumVoters",
+        "type": "bytes32[4]"
+      },
+      {
+        "internalType": "bytes32[4]",
+        "name": "_signature",
+        "type": "bytes32[4]"
+      }
+    ],
+    "name": "createElection",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getElectionsCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]
 
 const getElectionAddr = async id => {
