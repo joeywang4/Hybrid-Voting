@@ -6,7 +6,7 @@ web3.eth.net.getNetworkType()
   if(name !== "ropsten") console.error(`You are using ${name} network. Please switch to ropsten testnet!`);
 });
 
-const addr = "0xA3D6B1bdE984f97D9E6683496A2447dcF18dbC29";
+const addr = "0x244EDd0de412AdE0e90543eE8AfA531E6Ef3D272";
 const abi = [
   {
     "anonymous": false,

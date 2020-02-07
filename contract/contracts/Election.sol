@@ -19,7 +19,6 @@ contract Election {
     uint16 constant signatureLength = 4160;
     // T1,T2,T3,T4,T5,T6,T7,T8,T9,g, h, s, t, y, s1,e1,s2_1,s2_2,e2,s3_1,s3_2,e3,s4_1,s4_2,e4,s5_1,s5_2,e5,s6,e6, s7, e7, s8_1,s8_2,e8, s9_1,s9_2,e9, sL, eL
     // 0, 4, 8, 12,16,20,24,28,32,36,40,44,48,52,56,60,61,  65,  69,70,  74,  78,79,  83,  87,88,  92,  96,97,101,102,106,107, 111, 115,116, 120, 124,125,129
-    uint8 constant validatorLength = 10;
     bytes32[4] public sigN = [
         bytes32(0xab38875398ceacb6b8bd48924bd9001ba3667819dfba19bb3356a0068995396b),
         bytes32(0x56153fc51a0bd6888d53e80749b8d0f493d2895ac04524ad9fed0d79700f0282),
@@ -55,7 +54,7 @@ contract Election {
     bytes32[4] public accumVoters;
     bytes32[4][] public tellersPubShare;
     bytes32[4][] public tellersSecret;
-    bytes32[4] public elgamalPubKey;
+    // bytes32[4] public elgamalPubKey;
 
     /* Modifiers */
     constructor(
@@ -85,7 +84,7 @@ contract Election {
             tellersPubShare.push([bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))]);
             tellersSecret.push([bytes32(0), bytes32(0), bytes32(0), bytes32(0)]);
         }
-        elgamalPubKey = [bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))];
+        // elgamalPubKey = [bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))];
         emit NewElection(address(this));
     }
 
@@ -94,7 +93,7 @@ contract Election {
         require(keccak256(abi.encodePacked(tellersPubShare[tellerId])) == keccak256(abi.encodePacked([bytes32(0), bytes32(0), bytes32(0), bytes32(uint(1))])), "No Double Sharing");
         require(Verify.isValidRSASig([bytes32(0), bytes32(0), bytes32(0), keccak256(abi.encodePacked(h))], signature, tellers[tellerId]), "Bad Signature");
         tellersPubShare[tellerId] = h;
-        elgamalPubKey = Verify.modmulWrapper(elgamalPubKey, h, elgamalP);
+        // elgamalPubKey = Verify.modmulWrapper(elgamalPubKey, h, elgamalP);
     }
 
     function sendElgamalSecret(uint32 tellerId, bytes32[4] memory secret, bytes32[4] memory signature) public {
@@ -110,7 +109,7 @@ contract Election {
     function getAccumBase() public view returns(bytes32[4] memory) { return accumBase; }
     function getLinkBase() public view returns(bytes32[4] memory) { return linkBase; }
     function getAccumVoters() public view returns(bytes32[4] memory) { return accumVoters; }
-    function getElgamalPubKey() public view returns(bytes32[4] memory) { return elgamalPubKey; }
+    // function getElgamalPubKey() public view returns(bytes32[4] memory) { return elgamalPubKey; }
     function getSigN() public view returns(bytes32[4] memory) { return sigN; }
     function getSigPhi() public view returns(bytes32[4] memory) { return sigPhi; }
     function getTellersPubShare() public view returns(bytes32[4][] memory) { return tellersPubShare; }
@@ -122,9 +121,9 @@ contract Election {
         bytes32[pubKeyAccumLength/32] pubKeyAccum;
         bytes32[linkableTagLength/32] linkableTag;
         bytes32[signatureLength/32] signature;
-        uint8[validatorLength] validator;
     }
     Ballot[] private ballots;
+    mapping(bytes32 => uint) public linkableTagMapping;
 
     function castBallot (
         bytes32[messageLength/32] memory _message,
@@ -135,9 +134,10 @@ contract Election {
         require(now >= begin, "Election is not started");
         require(now <= end, "Election is ended");
         require(keccak256(abi.encodePacked(_pubKeyAccum)) == keccak256(abi.encodePacked(accumVoters)), "Bad accumVoters");
-        require(verifyLinkableTag(_linkableTag), "Bad linkableTag");
-        uint8[validatorLength] memory validator = [0,0,0,0,0,0,0,0,0,0];
-        uint id = ballots.push(Ballot(_message, _pubKeyAccum, _linkableTag, _signature, validator)) - 1;
+        bytes32 linkableTagHash = keccak256(abi.encodePacked(_linkableTag));
+        require(verifyLinkableTag(linkableTagHash), "Bad linkableTag");
+        uint id = ballots.push(Ballot(_message, _pubKeyAccum, _linkableTag, _signature)) - 1;
+        linkableTagMapping[linkableTagHash] = ballots.length;
         emit NewBallot(id);
     }
 
@@ -145,14 +145,11 @@ contract Election {
     function getMessage(uint32 _idx) public view returns(bytes32[messageLength/32] memory) { return ballots[_idx].message; }
     function getPubKeyAccum(uint32 _idx) public view returns(bytes32[pubKeyAccumLength/32] memory) { return ballots[_idx].pubKeyAccum; }
     function getLinkableTag(uint32 _idx) public view returns(bytes32[linkableTagLength/32] memory) { return ballots[_idx].linkableTag; }
+    function getLinkableTagMapping(bytes32 _key) public view returns(uint) { return linkableTagMapping[_key]; }
     function getSignature(uint32 _idx) public view returns(bytes32[signatureLength/32] memory _signature) { return ballots[_idx].signature; }
-    function getValidator(uint32 _idx) public view returns(uint8[validatorLength] memory) { return ballots[_idx].validator; }
 
-    function verifyLinkableTag(bytes32[linkableTagLength/32] memory _linkableTag) public view returns(bool) {
-        for (uint32 i = 0; i<ballots.length; ++i) {
-            if (keccak256(abi.encodePacked(getLinkableTag(i))) == keccak256(abi.encodePacked(_linkableTag))) return false;
-        }
-        return true;
+    function verifyLinkableTag(bytes32 _linkableTagHash) public view returns(bool) {
+        return linkableTagMapping[_linkableTagHash] == 0;
     }
 
 }

@@ -160,27 +160,6 @@ const abi = [
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "elgamalPubKey",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "end",
     "outputs": [
@@ -209,6 +188,27 @@ const abi = [
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "linkableTagMapping",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -463,21 +463,6 @@ const abi = [
   {
     "constant": true,
     "inputs": [],
-    "name": "getElgamalPubKey",
-    "outputs": [
-      {
-        "internalType": "bytes32[4]",
-        "name": "",
-        "type": "bytes32[4]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "getSigN",
     "outputs": [
       {
@@ -647,6 +632,27 @@ const abi = [
     "constant": true,
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_key",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getLinkableTagMapping",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "uint32",
         "name": "_idx",
         "type": "uint32"
@@ -668,30 +674,9 @@ const abi = [
     "constant": true,
     "inputs": [
       {
-        "internalType": "uint32",
-        "name": "_idx",
-        "type": "uint32"
-      }
-    ],
-    "name": "getValidator",
-    "outputs": [
-      {
-        "internalType": "uint8[10]",
-        "name": "",
-        "type": "uint8[10]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32[4]",
-        "name": "_linkableTag",
-        "type": "bytes32[4]"
+        "internalType": "bytes32",
+        "name": "_linkableTagHash",
+        "type": "bytes32"
       }
     ],
     "name": "verifyLinkableTag",
@@ -846,12 +831,6 @@ const getAccumVoters = async address => {
   .then(data => data);
 }
 
-const getElgamalPubKey = async address => {
-  const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getElgamalPubKey().call()
-  .then(data => data);
-}
-
 const getSigN = async address => {
   const Contract = new web3.eth.Contract(abi, address);
   return await Contract.methods.getSigN().call()
@@ -906,14 +885,6 @@ const getSignature = async (_idx, address) => {
   .then(data => data);
 }
 
-const getValidator = async (_idx, address) => {
-  const Contract = new web3.eth.Contract(abi, address);
-  return await Contract.methods.getValidator(_idx).call()
-  .then(data => {
-    return data.map(_val => parseInt(_val));
-  });
-}
-
 const getElectionInfo = async address => {
   const [
     begin,
@@ -923,7 +894,6 @@ const getElectionInfo = async address => {
     accumBase,
     linkBase,
     accumVoters,
-    elgamalPubKey,
     sigN,
     sigPhi,
     tellersPubShare,
@@ -936,7 +906,6 @@ const getElectionInfo = async address => {
     getAccumBase(address),
     getLinkBase(address),
     getAccumVoters(address),
-    getElgamalPubKey(address),
     getSigN(address),
     getSigPhi(address),
     getTellersPubShare(address),
@@ -950,7 +919,6 @@ const getElectionInfo = async address => {
     accumBase,
     linkBase,
     accumVoters,
-    elgamalPubKey,
     sigN,
     sigPhi,
     tellersPubShare,
@@ -970,7 +938,6 @@ export {
   getAccumBase,
   getLinkBase,
   getAccumVoters,
-  getElgamalPubKey,
   getSigN,
   getSigPhi,
   getTellersPubShare,
@@ -980,6 +947,5 @@ export {
   getPubKeyAccum,
   getLinkableTag,
   getSignature,
-  getValidator,
   getElectionInfo,
 };

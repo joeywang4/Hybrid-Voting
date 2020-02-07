@@ -64,7 +64,7 @@ def gen_sig_param():
 def gen_accum_voters(accumBase, voters):
   power = 1
   for voter in voters:
-    power *= voter
+    power = (power*voter)%phiN_sig
   return pow(accumBase, power, N_sig)
 
 # Sign a message

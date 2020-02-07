@@ -1,6 +1,6 @@
 import React from 'react';
 import { Header, Icon, Divider, Grid, Table, Popup, Container, Button, Loader, List, Segment, Portal } from 'semantic-ui-react';
-import { getBallotsCount, getMessage, getSignature, getValidator, VerifySignature } from '../../contract/election';
+import { getBallotsCount, getMessage, getSignature, VerifySignature } from '../../contract/election';
 import { bytes32ToHex } from '../../contract/util';
 import { BACKEND_URL } from '../../const_val';
 
@@ -57,7 +57,7 @@ class Result extends React.Component {
     const address = this.props.address;
     const count = await getBallotsCount(this.props.address).then(data => data);
     for(let i = 0;i < count;i++) {
-      let [_message, _signature, _validator] = await Promise.all([getMessage(i, address), getSignature(i, address),  getValidator(i, address)]);
+      let [_message, _signature, _validator] = await Promise.all([getMessage(i, address), getSignature(i, address),  [0,0,0,0,0,0]]);
       this.ballots.push({message: bytes32ToHex(_message), signature: bytes32ToHex(_signature), validator: _validator, choice: -1});
     }
     for(let i = 0;i < this.props.ballots.length;i++) {
@@ -96,7 +96,7 @@ class Result extends React.Component {
     }
     const onConfirmed = async (confirmationNumber, receipt) => {
       console.log("[*] Confirmed.", confirmationNumber, receipt);
-      const newValidator = await getValidator(id, this.props.address);
+      const newValidator = [0,0,0,0,0,0];
       this.setState(state => {
         state.validateStatus[id] = SUCCESS;
         state.validation[id] = this.encodeValidator(newValidator);

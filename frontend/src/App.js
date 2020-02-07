@@ -10,6 +10,7 @@ import User from './container/users/user';
 import Elections from './container/elections';
 import Election from './container/elections/Election';
 import CreateElection from './container/elections/CreateElection';
+import TestCreateElection from './container/tests/testCreateElection';
 import {BACKEND_URL, CLIENT_URL} from './const_val';
 import './App.css';
 
@@ -103,6 +104,7 @@ class App extends React.Component {
                 }}
               </Route>
               <Route exact path="/create-election"><CreateElection hasClient={this.state.hasClient} /></Route>
+              <Route exact path="/test-create-election"><TestCreateElection hasClient={this.state.hasClient} /></Route>
               <Route path="/redirect/:name">
                 {({ match }) => {
                   this.forceUpdate();
