@@ -2,7 +2,7 @@ import React from 'react';
 import { Header, Icon, Divider, Grid, Table, Popup, Container, Button, Loader, List, Segment, Portal } from 'semantic-ui-react';
 import { getBallotsCount, getMessage, getSignature, VerifySignature } from '../../contract/election';
 import { bytes32ToHex } from '../../contract/util';
-import { BACKEND_URL } from '../../const_val';
+import { BACKEND_URL } from '../../config';
 
 const [SUCCESS, LOADING, IDLE] = [0, 1, 2];
 

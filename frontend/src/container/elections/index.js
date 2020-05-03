@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Header, Icon, Divider, Loader, Card, Image, Button, Popup } from 'semantic-ui-react';
-import { BACKEND_URL } from '../../const_val';
+import { BACKEND_URL } from '../../config';
 import electionIcon from './election.png'
 
 const [ERROR, SUCCESS, LOADING] = [0, 1, 2];

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Grid, Form, Button, Message, Icon, Header } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
-import {BACKEND_URL} from '../../const_val'
+import {BACKEND_URL} from '../../config'
 
 class LoginForm extends React.Component {
   constructor(props) {

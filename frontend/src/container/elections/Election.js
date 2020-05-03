@@ -6,7 +6,7 @@ import Ballot from './Ballot';
 import Result from './Result';
 import { getElectionInfo } from '../../contract/election';
 import { hexToBase64, bytes32ToHex } from '../../contract/util';
-import {BACKEND_URL} from '../../const_val';
+import {BACKEND_URL} from '../../config';
 
 const [ERROR, LOADING, IDLE] = [0, 1, 2];
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Header, Icon, Loader } from 'semantic-ui-react';
-import {BACKEND_URL} from '../../const_val';
+import {BACKEND_URL} from '../../config';
 
 const [FAILED, SUCCESS, LOADING, MISSING] = [0, 1, 2, 3];
 

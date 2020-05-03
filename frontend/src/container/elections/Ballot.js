@@ -1,7 +1,7 @@
 import React from 'react';
 import { Header, Icon, Divider, Grid, Table, Form, Button, Message } from 'semantic-ui-react';
 import { castBallot } from '../../contract/election';
-import { CLIENT_URL, NO_CLIENT_URL } from '../../const_val';
+import { CLIENT_URL, NO_CLIENT_URL } from '../../config';
 import { hexToBase64, base64ToBytes32 } from '../../contract/util';
 
 const [LOADING, IDLE] = [0, 1];

@@ -16,8 +16,8 @@ router.post('/login', async (req, res) => {
   // Check user existence
   const user = await User.findOne({email: _email})
   .then(userResponse => {
-    if(!userResponse) {
-      console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login failed: ${user.email} user not found`);
+    if(userResponse === null) {
+      console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login failed: ${_email} user not found`);
       res.status(400).send("Login failed");
       return;
     }

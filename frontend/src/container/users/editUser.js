@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Form, Message, Divider, Header, Icon, Grid } from 'semantic-ui-react';
 import { Redirect } from 'react-router-dom';
-import {BACKEND_URL} from '../../const_val';
+import {BACKEND_URL} from '../../config';
 
 const [FAILED, SUCCESS, LOADING, NAMEERROR, PWDERROR, WAITING] = [0, 1, 2, 3, 4, 5];
 

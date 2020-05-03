@@ -11,7 +11,7 @@ import Elections from './container/elections';
 import Election from './container/elections/Election';
 import CreateElection from './container/elections/CreateElection';
 import TestCreateElection from './container/tests/testCreateElection';
-import {BACKEND_URL, CLIENT_URL} from './const_val';
+import {BACKEND_URL, CLIENT_URL} from './config';
 import './App.css';
 
 function timedFetch (url, options, timeout = 7000) {

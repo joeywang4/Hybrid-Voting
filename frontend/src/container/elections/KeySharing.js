@@ -2,7 +2,7 @@ import React from 'react';
 import { Header, Icon, Divider, Form, Grid, Message, Button, Portal, Segment, Table, Popup, Container } from 'semantic-ui-react';
 import { sendElgamalPubShare, sendElgamalSecret, getTellersPubShare, getTellersSecret } from '../../contract/election';
 import { base64ToBytes32, hexToBase64 } from '../../contract/util';
-import { CLIENT_URL, NO_CLIENT_URL } from "../../const_val";
+import { CLIENT_URL, NO_CLIENT_URL } from "../../config";
 
 const [LOADING, IDLE] = [0, 1];
 

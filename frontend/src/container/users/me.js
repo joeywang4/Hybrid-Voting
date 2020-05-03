@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Header, Icon, Divider, Loader } from 'semantic-ui-react';
 import EditUser from "./editUser";
-import {BACKEND_URL} from '../../const_val';
+import {BACKEND_URL} from '../../config';
 
 const [FAILED, SUCCESS, LOADING, MISSING] = [0, 1, 2, 3];
 

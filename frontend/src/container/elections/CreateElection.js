@@ -3,7 +3,7 @@ import { Grid, Form, Button, Message, Icon, Header, TextArea, Table, Menu, Loade
 import { Link } from 'react-router-dom'
 import { createElection } from '../../contract/electionMaster'
 import { base64ToBytes32 } from '../../contract/util'
-import { BACKEND_URL, CLIENT_URL, NO_CLIENT_URL } from '../../const_val';
+import { BACKEND_URL, CLIENT_URL, NO_CLIENT_URL } from '../../config';
 
 const [IDLE, BUSY, ERROR] = [0, 1, 2];
 const tableRows = 3;

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Grid, Form, Button, Message, Icon, Header, TextArea } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
-import {BACKEND_URL, CLIENT_URL, NO_CLIENT_URL} from '../../const_val';
+import {BACKEND_URL, CLIENT_URL, NO_CLIENT_URL} from '../../config';
 
 const [IDLE, BUSY, ERROR] = [0, 1, 2]
 
